@@ -10,5 +10,17 @@
   "benchmark_policy": "no unnecessary paid benchmark",
   "secret_policy": "never persist provider credentials or secret values",
   "provenance_fields": ["provider", "model_id", "cost_tier", "fallback", "reason"],
-  "remaining_optimization": "reconcile active Hermes Desktop model identifier with current provider catalog"
+  "active_config": {
+    "provider": "auto",
+    "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+    "cost_tier": "free",
+    "catalog_status": "found",
+    "tool_capable": true
+  },
+  "fallback_models": [
+    "z-ai/glm-5.2:free",
+    "minimax/minimax-m3:free",
+    "nvidia/nemotron-3.5-lightning:free"
+  ],
+  "remaining_optimization": "none_for_current_model_configuration"
 }

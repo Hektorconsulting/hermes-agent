@@ -3,8 +3,8 @@
 Status: active operational baseline, 2026-09-04
 
 This runbook records the recovery defaults for the owner-controlled Hermes
-runtime. It is deliberately operational rather than a claim that a complete
-restore rehearsal has already been performed.
+runtime. The isolated restore rehearsal below is now complete; it did not
+overwrite the canonical runtime.
 
 ## Recovery ownership
 
@@ -29,6 +29,18 @@ restore rehearsal has already been performed.
 | Control-plane backup | existing `hektor-control-plane-backup.sh` and backup timer | creates chmod-600 archives containing runtime metadata, databases, NPM state and Vault snapshot |
 | Health observation | existing Hermes stack health service/timer | emits bounded service and endpoint observations for recovery handling |
 | Knowledge persistence | canonical SQLite database plus local mirror | write-back is redacted, namespace-scoped and content-addressed for retry safety |
+
+## Restore rehearsal evidence
+
+On 2026-09-04 the current control-plane backup was created and restored into a
+temporary VPS directory. The archive was `109,011,196` bytes with mode `0600`.
+Extraction and verification completed in `4,008 ms` total (`2,329 ms`
+extraction, `1,679 ms` verification). The restored shared knowledge database
+and NPM SQLite database both returned `PRAGMA integrity_check = ok`.
+
+The archive also contained a `781,339`-byte n8n PostgreSQL dump and a
+`5,310,859`-byte Vault Raft snapshot. No production database, Vault state or
+service was changed during the rehearsal.
 
 ## Defaults
 
@@ -79,8 +91,9 @@ OpenClaw systemd units. Their exact paths and hashes remain in the task
 write-back and source registry; this document intentionally does not contain
 secret values.
 
-## Known follow-up
+## Remaining reliability work
 
-The remaining reliability improvement is a non-destructive, isolated restore
-rehearsal that measures actual RTO. It is not required for ordinary service
-restart recovery and must not overwrite the canonical VPS database.
+The measured rehearsal closes the restore-proof gap. Future scheduled runs
+should retain the same artifact checks and alert if either the n8n dump or the
+Vault snapshot is missing; a production restore remains a separate, explicitly
+identified rollback operation.

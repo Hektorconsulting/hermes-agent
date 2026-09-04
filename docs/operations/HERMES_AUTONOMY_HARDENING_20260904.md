@@ -35,7 +35,7 @@ files are mirrors or source artifacts only.
 | OpenClaw | Edge agent and messaging execution | `/usr/lib/node_modules/openclaw`; systemd launcher | version `2026.9.1`, latest registry version read back | Vault-backed secret, gateway | Mobile/Tailscale pairing remains external |
 | n8n | Workflow execution and MCP workflow surface | existing VPS deployment | existing authenticated path reused | OAuth/MCP, credentials | Maintain reviewed workflow allowlist |
 | Vault/secret authority | Raw secret source for runtime consumers | existing Vault-backed launcher | secret values not read or persisted | OpenClaw/Hermes consumers | Keep consumer references redacted |
-| Backup/health automation | Recovery and runtime observation | existing Hermes backup and health timers | timers present and active | systemd, storage | Schedule a non-disruptive recovery rehearsal |
+| Backup/health automation | Recovery and runtime observation | managed backup script and existing Hermes health timers | backup/archive and isolated restore rehearsal PASS | systemd, storage | Keep scheduled artifact checks and alerting |
 | UFW/exposure | Network boundary | VPS firewall | default deny inbound; Docker `DOCKER-USER` drops admin ports 81/8082; OpenClaw remains limited to Docker ranges | Cloudflare/NGINX/NPM policy | Tailscale login is still required for mobile route |
 
 ## Evidence and redaction
@@ -46,7 +46,7 @@ files are mirrors or source artifacts only.
 - VPS runtime file SHA-256 values matched the local Git checkout.
 - Fork persistence is configured as `origin=https://github.com/Hektorconsulting/hermes-agent.git`
   with `upstream=https://github.com/NousResearch/hermes-agent.git`; the current
-  owner-fork head is `d96668ae4` and the deployed bridge hash is
+  owner-fork head is `57ddc3c6f9fe3d7e77c437b1d3238dddc53b014a` and the deployed bridge hash is
   `71adb302f5e990eb477295649048a418a1741c7a19bf03746c9cccfff835ac5e`.
 - VPS shared knowledge status: integrity `ok`; `knowledge_tasks` present;
   hardening and policy write-backs archived and redacted.
@@ -63,6 +63,22 @@ files are mirrors or source artifacts only.
   closed. The live service and timer are active.
 - No credential values, tokens, passwords, API keys or `.env` values are part
   of this artifact.
+
+## Phase 3 additions
+
+- The managed control-plane backup now includes the canonical shared knowledge
+  database, uses the actual n8n database role and securely supplies the Vault
+  snapshot token without persisting its value. The deployed script hash is
+  `00c12c9fc01a1edc86269588443d6ba9d93c08d874aaaea5acfef59332015a8d`.
+- The isolated restore rehearsal completed in `4,008 ms` total with shared
+  knowledge and NPM integrity checks `ok`; n8n and Vault artifacts were
+  present. This was non-destructive and did not overwrite production state.
+- Hermes Desktop model routing remains on the catalog-valid free,
+  tool-capable `nvidia/nemotron-3-super-120b-a12b:free` with three loaded free
+  fallbacks; no paid benchmark or model-ID replacement was required.
+- OpenClaw server-side evidence covers authenticated integration discovery,
+  result return, bounded Telegram voice ingestion, model routing and all
+  normalized A2A agent-card endpoints. No external message was sent.
 
 ## Remaining external gates
 

@@ -31,11 +31,17 @@ does not store provider credentials or secret values.
 - Do not retest the verified Hermes -> Codex -> n8n -> Synthesis -> shared_kb
   chain unless a model or routing mutation affects it.
 
-## Operational gap
+## Current reconciliation
 
-The remaining optimization is a configuration/catalog reconciliation: compare
-the active Hermes Desktop model identifier with the current provider catalog,
-then change only an invalid identifier to an available, tool-capable,
-cost-efficient model. This is a technical fix when the provider session is
-already authorized; interactive provider consent or a new paid commitment is
-not automated.
+The active Hermes configuration uses `provider: auto` with
+`nvidia/nemotron-3-super-120b-a12b:free`. The current OpenRouter catalog
+contains that exact identifier with zero prompt/completion price and support
+for tools. The local Hermes fallback list now contains three catalog-valid,
+free, tool-capable alternatives:
+
+- `z-ai/glm-5.2:free`
+- `minimax/minimax-m3:free`
+- `nvidia/nemotron-3.5-lightning:free`
+
+No model-ID replacement was necessary. The configuration was backed up and
+the local Hermes backend was reconnected so the fallback list is loaded.
