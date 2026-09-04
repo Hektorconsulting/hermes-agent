@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodic Hermes Docker exposure policy reconciliation
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=5min
+Persistent=true
+Unit=hermes-docker-exposure-guard.service
+
+[Install]
+WantedBy=timers.target

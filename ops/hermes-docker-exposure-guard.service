@@ -1,0 +1,15 @@
+[Unit]
+Description=Hermes Docker published-port exposure guard
+After=docker.service ufw.service
+Wants=docker.service
+PartOf=docker.service ufw.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/hermes-docker-exposure-guard.sh
+RemainAfterExit=yes
+
+
+[Install]
+WantedBy=docker.service
+WantedBy=ufw.service
