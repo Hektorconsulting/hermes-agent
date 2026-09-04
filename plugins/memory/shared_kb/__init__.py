@@ -120,6 +120,33 @@ class SharedKnowledgeProvider(MemoryProvider):
             "result": {"summary": "Session transcript archived", "status": "archived"},
         })
 
+    def on_session_switch(self, new_session_id: str, **kwargs) -> None:
+        """Keep boundary archives and subsequent turns on the new session."""
+        if new_session_id:
+            self.session_id = new_session_id
+
+    def on_delegation(self, task: str, result: str, *, child_session_id: str = "", **kwargs) -> None:
+        """Persist delegation lineage without requiring a model tool call."""
+        if not self.bridge or not task:
+            return
+        child_id = child_session_id or "delegation"
+        self.bridge.writeback({
+            "task_id": child_id,
+            "parent_task_id": self.session_id,
+            "session_id": child_session_id or self.session_id,
+            "channel": self.platform,
+            "agent_id": "hermes",
+            "assigned_to": str(kwargs.get("assigned_to") or "delegated_agent"),
+            "system_scope": "hermes",
+            "privacy_scope": "system",
+            "event_type": "delegation_writeback",
+            "objective": task,
+            "archive": [{"role": "delegation", "content": task}, {"role": "result", "content": result or "(no result)"}],
+            "requirement": {"objective": task, "namespace": "system", "status": "delegated"},
+            "result": {"summary": result or "(no result)", "status": "completed"},
+            "provenance": {"provider": self.name, "parent_session_id": self.session_id},
+        })
+
     def get_tool_schemas(self) -> List[Dict[str, Any]]:
         return [
             {"name": "shared_knowledge_preflight", "description": "Query canonical scoped Hermes/OpenClaw knowledge before operational work.", "parameters": {"type": "object", "properties": {"objective": {"type": "string"}, "privacy_scope": {"type": "string"}}, "required": ["objective"]}},

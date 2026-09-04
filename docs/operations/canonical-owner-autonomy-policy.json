@@ -1,0 +1,29 @@
+{
+  "policy_id": "hermes-owner-autonomy-v1",
+  "status": "active",
+  "owner": "Bjorn",
+  "scope": "owner-controlled Hermes infrastructure",
+  "security_invariants": [
+    "never expose secrets",
+    "preserve authentication and tenant isolation",
+    "preserve backups and rollback paths",
+    "retain provenance and auditability"
+  ],
+  "autonomous_actions": [
+    "read and analyze infrastructure",
+    "change and test code in the authorized Hermes repository",
+    "repair reversible configuration and runtime paths",
+    "update internal knowledge, registries and runbooks",
+    "perform controlled deployment with backup and rollback"
+  ],
+  "approval_required_actions": [
+    "interactive OAuth consent, 2FA or CAPTCHA",
+    "physical device or QR pairing",
+    "irreversible deletion without a verified restore path",
+    "external customer or payment communication",
+    "new paid contract or financial commitment"
+  ],
+  "secret_authority": "Vault or existing secret store; n8n stores references only",
+  "source_of_truth": "canonical Hermes VPS shared knowledge database",
+  "lifecycle": ["BACKUP", "CHANGE", "TEST", "VERIFY", "COMMIT", "PUSH", "DEPLOY", "KNOWLEDGE_WRITEBACK"]
+}
