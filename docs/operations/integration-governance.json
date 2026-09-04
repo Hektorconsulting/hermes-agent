@@ -16,8 +16,8 @@
       "owner": "hermes",
       "executor": "hermes",
       "state": "PASS",
-      "scope": "preflight, namespace-scoped results, session archive, provenance, writeback",
-      "next": "Hermes lifecycle review after startup"
+      "scope": "canonical VPS preflight, namespace-scoped results, session archive, provenance, writeback, local mirror fallback",
+      "next": "Continue normal lifecycle review; no closure work remains"
     },
     {
       "area": "n8n",
@@ -39,17 +39,17 @@
       "area": "cloudflare-dns-nginx",
       "owner": "owner-or-hermes",
       "executor": "hermes",
-      "state": "PARTIAL",
-      "scope": "public edge routes only; admin surfaces private; no public NPM admin port",
-      "next": "Targeted route/readback only when changing exposure or domain ownership"
+      "state": "PASS_WITH_RETIRED_LEGACY_ROUTE",
+      "scope": "intentional public 80/443 routes; admin surfaces private; obsolete Hermes dashboard proxy retired; no public NPM admin port",
+      "next": "Revisit only if a new authenticated domain route is intentionally requested"
     },
     {
       "area": "backups-docker-watchtower",
       "owner": "hermes",
       "executor": "hermes",
-      "state": "EXISTING_AUTOMATION",
-      "scope": "backup scripts, health timers, Docker runtime and recovery documentation",
-      "next": "Non-destructive restore rehearsal when maintenance window is available"
+      "state": "PASS",
+      "scope": "managed backup script/timer, health timers, Docker runtime and recovery documentation",
+      "next": "Retain scheduled artifact checks and alerting"
     },
     {
       "area": "openclaw-telegram-audio",
@@ -87,17 +87,17 @@
       "area": "model-routing-costs",
       "owner": "hermes",
       "executor": "hermes",
-      "state": "TECHNICAL_OPTIMIZATION",
+      "state": "PASS_FREE_FIRST",
       "scope": "OpenRouter/provider/model selection, free-first routing and fallback",
-      "next": "Use current available tool-capable model; never run unnecessary paid benchmarks"
+      "next": "Use current available tool-capable model; no paid benchmark required"
     },
     {
       "area": "windows-autostart-vscode",
       "owner": "owner-or-hermes",
       "executor": "hermes",
-      "state": "TECHNICAL_OPTIMIZATION",
+      "state": "PASS_AUTOMATED_STARTUP",
       "scope": "Hermes Desktop launch, Codex project identity and local reconnect behavior",
-      "next": "Repair startup/reconnect autonomously; physical sign-in remains a gate"
+      "next": "Existing startup/watchdog/reconnect controls remain active; physical sign-in remains a gate"
     },
     {
       "area": "knowledge-lifecycle",

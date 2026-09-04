@@ -3,11 +3,68 @@ from __future__ import annotations
 
 import json
 import os
+import base64
+import shutil
+import subprocess
 from typing import Any, Dict, List
 
 from agent.memory_provider import MemoryProvider
 from tools.shared_knowledge.bridge import KnowledgeBridge
 from tools.task_envelope import TaskEnvelope
+
+
+class _RemoteKnowledgeBridge:
+    """Call the canonical VPS bridge through the fixed Windows SSH wrapper.
+
+    The local SQLite bridge remains the cache/fallback.  The remote call uses
+    a base64-framed stdin payload so JSON never becomes a shell command.
+    """
+
+    def __init__(self, config: dict[str, Any]) -> None:
+        self.host_alias = str(config.get("remote_host_alias") or "").strip()
+        self.remote_db = str(config.get("remote_db_path") or "").strip()
+        self.remote_script = str(config.get("remote_bridge_script") or "").strip()
+        self.wrapper = str(config.get("remote_wrapper") or "").strip()
+        self.timeout = max(5, min(int(config.get("remote_timeout_seconds") or 20), 60))
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.host_alias and self.remote_db and self.remote_script and self.wrapper)
+
+    def call(self, action: str, payload: dict[str, Any], *, task_id: str = "") -> dict[str, Any] | None:
+        if not self.enabled:
+            return None
+        encoded = base64.b64encode(
+            json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        ).decode("ascii")
+        remote_payload = (
+            "set -euo pipefail\n"
+            f"printf '%s' '{encoded}' | base64 -d | "
+            f"HERMES_KNOWLEDGE_DB='{self.remote_db}' "
+            f"python3 '{self.remote_script}' {action} --stdin\n"
+        )
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if not powershell:
+            return None
+        command = [
+            powershell, "-NoProfile", "-NonInteractive", "-File", self.wrapper,
+            "-HostAlias", self.host_alias, "-Payload", remote_payload,
+            "-TaskId", task_id, "-TimeoutSeconds", str(self.timeout),
+        ]
+        try:
+            completed = subprocess.run(
+                command, capture_output=True, text=True,
+                encoding="utf-8", errors="replace", timeout=self.timeout + 5,
+                check=False,
+            )
+            if completed.returncode != 0 or not completed.stdout.strip():
+                return None
+            outer = json.loads(completed.stdout)
+            if not outer.get("ok"):
+                return None
+            return json.loads(outer.get("stdout") or "{}")
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            return None
 
 
 class SharedKnowledgeProvider(MemoryProvider):
@@ -17,6 +74,7 @@ class SharedKnowledgeProvider(MemoryProvider):
         self.session_id = ""
         self.platform = ""
         self.context: Dict[str, Any] = {}
+        self.remote_bridge: _RemoteKnowledgeBridge | None = None
 
     @property
     def name(self) -> str:
@@ -30,15 +88,19 @@ class SharedKnowledgeProvider(MemoryProvider):
         self.platform = kwargs.get("platform", "cli")
         self.context = dict(kwargs)
         path = self.config.get("db_path") or os.environ.get("HERMES_KNOWLEDGE_DB")
-        if not path:
-            try:
-                from hermes_cli.config import load_config
-                memory = load_config().get("memory", {})
-                provider_config = memory.get("shared_kb", {}) if isinstance(memory, dict) else {}
-                path = provider_config.get("db_path") if isinstance(provider_config, dict) else None
-            except Exception:
-                path = None
+        provider_config: dict[str, Any] = {}
+        try:
+            from hermes_cli.config import load_config
+            memory = load_config().get("memory", {})
+            provider_config = memory.get("shared_kb", {}) if isinstance(memory, dict) else {}
+        except Exception:
+            provider_config = {}
+        if not path and isinstance(provider_config, dict):
+            path = provider_config.get("db_path")
         self.bridge = KnowledgeBridge(path)
+        remote_config = provider_config if isinstance(provider_config, dict) else {}
+        remote = _RemoteKnowledgeBridge(remote_config)
+        self.remote_bridge = remote if remote.enabled else None
 
     def system_prompt_block(self) -> str:
         return ("# Shared Knowledge\n"
@@ -60,7 +122,7 @@ class SharedKnowledgeProvider(MemoryProvider):
             "parent_task_id": self.context.get("parent_task_id", ""),
             "provenance": {"agent_context": self.context.get("agent_context", "primary"), "provider": self.name},
         })
-        result = self.bridge.preflight({
+        request = {
             **envelope.to_dict(),
             "task_id": session_id or self.session_id,
             "session_id": session_id or self.session_id,
@@ -69,7 +131,13 @@ class SharedKnowledgeProvider(MemoryProvider):
             "objective": query,
             "requested_scope": query,
             "privacy_scope": "system",
-        })
+        }
+        result = None
+        if self.remote_bridge:
+            result = self.remote_bridge.call(
+                "preflight", request, task_id=envelope.task_id,
+            )
+        result = result or self.bridge.preflight(request)
         bundle = result.get("context_bundle", {})
         lines = ["## Shared Knowledge Preflight"]
         for item in bundle.get("requirements", [])[:5]:
@@ -91,7 +159,7 @@ class SharedKnowledgeProvider(MemoryProvider):
             "objective": user_content,
             "provenance": {"provider": self.name, "agent_context": self.context.get("agent_context", "primary")},
         })
-        self.bridge.writeback({
+        self._writeback({
             "task_envelope": task.to_dict(),
             "task_id": task.task_id,
             "session_id": task.session_id,
@@ -108,7 +176,7 @@ class SharedKnowledgeProvider(MemoryProvider):
         """Persist the latest complete transcript at the session boundary."""
         if not self.bridge or not messages:
             return
-        self.bridge.writeback({
+        self._writeback({
             "task_id": self.session_id or "hermes-session",
             "session_id": self.session_id,
             "channel": self.platform,
@@ -130,7 +198,7 @@ class SharedKnowledgeProvider(MemoryProvider):
         if not self.bridge or not task:
             return
         child_id = child_session_id or "delegation"
-        self.bridge.writeback({
+        self._writeback({
             "task_id": child_id,
             "parent_task_id": self.session_id,
             "session_id": child_session_id or self.session_id,
@@ -157,13 +225,27 @@ class SharedKnowledgeProvider(MemoryProvider):
         if not self.bridge:
             return json.dumps({"status": "FAIL", "error": "provider_not_initialized"})
         if tool_name == "shared_knowledge_preflight":
-            return json.dumps(self.bridge.preflight({"task_id": self.session_id, "session_id": self.session_id, "channel": self.platform, "agent_id": "hermes", "objective": args.get("objective", ""), "requested_scope": args.get("objective", ""), "privacy_scope": args.get("privacy_scope", "system")}), ensure_ascii=False)
+            request = {"task_id": self.session_id, "session_id": self.session_id, "channel": self.platform, "agent_id": "hermes", "objective": args.get("objective", ""), "requested_scope": args.get("objective", ""), "privacy_scope": args.get("privacy_scope", "system")}
+            result = self.remote_bridge.call("preflight", request, task_id=self.session_id) if self.remote_bridge else None
+            return json.dumps(result or self.bridge.preflight(request), ensure_ascii=False)
         if tool_name == "shared_knowledge_writeback":
-            return json.dumps(self.bridge.writeback({"task_id": self.session_id, "session_id": self.session_id, "channel": self.platform, "agent_id": "hermes", "privacy_scope": "system", "objective": args.get("objective", ""), "requirement": {"objective": args.get("objective", ""), "status": args.get("status", "draft")}, "result": {"summary": args.get("summary", ""), "status": args.get("status", "draft")}}), ensure_ascii=False)
+            payload = {"task_id": self.session_id, "session_id": self.session_id, "channel": self.platform, "agent_id": "hermes", "privacy_scope": "system", "objective": args.get("objective", ""), "requirement": {"objective": args.get("objective", ""), "status": args.get("status", "draft")}, "result": {"summary": args.get("summary", ""), "status": args.get("status", "draft")}}
+            return json.dumps(self._writeback(payload), ensure_ascii=False)
         return json.dumps({"status": "FAIL", "error": "unknown_tool"})
+
+    def _writeback(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Persist to the canonical VPS first, then refresh the local mirror."""
+        remote_result = None
+        if self.remote_bridge:
+            remote_result = self.remote_bridge.call(
+                "writeback", payload, task_id=str(payload.get("task_id") or ""),
+            )
+        local_result = self.bridge.writeback(payload) if self.bridge else None
+        return remote_result or local_result or {"status": "FAIL", "error": "knowledge_writeback_unavailable"}
 
     def shutdown(self) -> None:
         self.bridge = None
+        self.remote_bridge = None
 
 
 def register(ctx) -> None:
