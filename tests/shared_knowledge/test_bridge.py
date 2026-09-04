@@ -49,3 +49,24 @@ class SharedKnowledgeTests(unittest.TestCase):
             self.assertNotEqual(first["event_id"], second["event_id"])
             self.assertEqual(bridge.status()["counts"]["knowledge_sessions"], 1)
             self.assertEqual(bridge.status()["counts"]["knowledge_results"], 1)
+
+    def test_preflight_keeps_results_namespace_scoped(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = KnowledgeBridge(str(Path(directory) / "knowledge.db"))
+            bridge.writeback({
+                "task_id": "private-task", "session_id": "private-session",
+                "privacy_scope": "private", "archive": "private",
+                "result": {"result_id": "private-result", "summary": "private"},
+            })
+            bridge.writeback({
+                "task_id": "system-task", "session_id": "system-session",
+                "privacy_scope": "system", "archive": "system",
+                "result": {"result_id": "system-result", "summary": "system"},
+            })
+            result = bridge.preflight({
+                "task_id": "new-system-task", "session_id": "new-system-session",
+                "privacy_scope": "system", "objective": "read recent results",
+            })
+            summaries = [item.get("summary") for item in result["context_bundle"]["recent_results"]]
+            self.assertIn("system", summaries)
+            self.assertNotIn("private", summaries)

@@ -92,6 +92,15 @@ class KnowledgeBridge:
             CREATE INDEX IF NOT EXISTS knowledge_task_session ON knowledge_tasks(session_id);
             CREATE INDEX IF NOT EXISTS knowledge_task_state ON knowledge_tasks(execution_state);
             """)
+            # Older canonical databases predate result namespaces.  Migrate
+            # additively so existing results remain readable as system-scoped
+            # history while new preflights cannot cross privacy boundaries.
+            try:
+                c.execute("ALTER TABLE knowledge_results ADD COLUMN namespace TEXT NOT NULL DEFAULT 'system'")
+            except sqlite3.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    raise
+            c.execute("CREATE INDEX IF NOT EXISTS knowledge_result_namespace ON knowledge_results(namespace)")
 
     @staticmethod
     def _hash(value: Any) -> str:
@@ -155,7 +164,7 @@ class KnowledgeBridge:
         terms = [t.lower() for t in re.findall(r"[\w-]{3,}", query)][:8]
         with self._connection() as c:
             reqs = c.execute("SELECT payload_json FROM knowledge_requirements WHERE namespace IN (?, 'global') ORDER BY created_at DESC LIMIT 20", (request.get("privacy_scope", "system"),)).fetchall()
-            results = c.execute("SELECT payload_json FROM knowledge_results ORDER BY created_at DESC LIMIT 10").fetchall()
+            results = c.execute("SELECT payload_json FROM knowledge_results WHERE namespace IN (?, 'global') ORDER BY created_at DESC LIMIT 10", (request.get("privacy_scope", "system"),)).fetchall()
             sources = c.execute("SELECT source_id,path,system,namespace,status,sha256 FROM knowledge_sources WHERE namespace IN (?, 'global') ORDER BY modified_utc DESC LIMIT 40", (request.get("privacy_scope", "system"),)).fetchall()
             gaps = []
             if terms and "chunks_fts" in {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}:
@@ -208,7 +217,7 @@ class KnowledgeBridge:
             result = payload.get("result")
             if result:
                 rid = str(result.get("result_id") or task_id + ":result")
-                c.execute("INSERT OR IGNORE INTO knowledge_results VALUES(?,?,?,?,?,?,?)", (rid, task_id, session_id, result.get("status", "draft"), json.dumps(result, ensure_ascii=False), self._hash(result), now))
+                c.execute("INSERT OR IGNORE INTO knowledge_results(result_id,task_id,session_id,namespace,status,payload_json,content_hash,created_at) VALUES(?,?,?,?,?,?,?,?)", (rid, task_id, session_id, result.get("namespace", payload.get("privacy_scope", "system")), result.get("status", "draft"), json.dumps(result, ensure_ascii=False), self._hash(result), now))
                 c.execute("UPDATE knowledge_tasks SET execution_state=?, result_refs_json=?, updated_at=? WHERE task_id=?", (str(result.get("status") or "completed"), json.dumps([rid]), now, task_id))
             eid = str(payload.get("event_id") or task_id + ":event:" + self._hash(payload)[:24])
             c.execute("INSERT OR IGNORE INTO knowledge_events VALUES(?,?,?,?,?,?)", (eid, task_id, payload.get("event_type", "writeback"), json.dumps(payload, ensure_ascii=False), self._hash(payload), now))
