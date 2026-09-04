@@ -1,0 +1,29 @@
+{
+  "merge_id": "hermes-orchestration-owner-policy-20260904",
+  "canonical_policy": "docs/operations/canonical-owner-autonomy-policy.json",
+  "reference_skill": "C:/Users/Björn/.codex/skills/hermes-orchestration/SKILL.md",
+  "reference_skill_status": "technical-reference-only",
+  "rules": [
+    {"id":"D01","source":"skill","classification":"KEEP"},
+    {"id":"D02","source":"skill","classification":"KEEP"},
+    {"id":"D03","source":"skill","classification":"KEEP"},
+    {"id":"D04","source":"skill","classification":"MERGE_INTO_CANONICAL_POLICY"},
+    {"id":"D05","source":"skill","classification":"KEEP"},
+    {"id":"D06","source":"skill","classification":"KEEP"},
+    {"id":"D07","source":"skill","classification":"SUPERSEDED_BY_OWNER_POLICY"},
+    {"id":"D08","source":"skill","classification":"MERGE_INTO_CANONICAL_POLICY"},
+    {"id":"G01","source":"skill","classification":"SUPERSEDED_BY_OWNER_POLICY"},
+    {"id":"G02","source":"skill","classification":"KEEP"},
+    {"id":"G03","source":"skill","classification":"KEEP"},
+    {"id":"G04","source":"skill","classification":"SUPERSEDED_BY_OWNER_POLICY"},
+    {"id":"G05","source":"skill","classification":"KEEP"},
+    {"id":"G06","source":"skill","classification":"KEEP"},
+    {"id":"R01","source":"repository-AGENTS","classification":"KEEP"},
+    {"id":"R02","source":"desktop-AGENTS","classification":"KEEP"},
+    {"id":"O01","source":"canonical-owner-policy","classification":"MERGE_INTO_CANONICAL_POLICY"}
+  ],
+  "replaced_files": ["C:/Users/Björn/.codex/skills/hermes-orchestration/SKILL.md"],
+  "backup": "C:/Hermes/backups/hardening-20260904-054724/hermes-orchestration-SKILL.before-owner-policy-20260904.md",
+  "owner_gates_only": true,
+  "redacted": true
+}

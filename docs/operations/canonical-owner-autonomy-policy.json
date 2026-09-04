@@ -2,6 +2,14 @@
   "policy_id": "hermes-owner-autonomy-v1",
   "status": "active",
   "owner": "Bjorn",
+  "precedence": [
+    "current-owner-goal",
+    "current-owner-autonomy-directive",
+    "current-verified-system-state",
+    "historical-technical-references"
+  ],
+  "historical_references_are_non_governing": true,
+  "technical_change_autonomy": true,
   "scope": "owner-controlled Hermes infrastructure",
   "security_invariants": [
     "never expose secrets",
@@ -22,6 +30,12 @@
     "irreversible deletion without a verified restore path",
     "external customer or payment communication",
     "new paid contract or financial commitment"
+  ],
+  "superseded_policy_classes": [
+    "blanket approval for reversible deploys, restarts, firewall or DNS work",
+    "blanket prohibition on direct push to the owner fork",
+    "owner question after a technically solvable error",
+    "re-audit of a component already covered by current verified evidence"
   ],
   "secret_authority": "Vault or existing secret store; n8n stores references only",
   "source_of_truth": "canonical Hermes VPS shared knowledge database",
