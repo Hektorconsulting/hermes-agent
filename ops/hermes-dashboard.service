@@ -1,0 +1,15 @@
+[Unit]
+Description=Hermes Agent dashboard
+After=network.target
+
+[Service]
+Type=simple
+Environment=PATH=/home/ai-admin/.hermes/hermes-agent/venv/bin:/home/ai-admin/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=HERMES_DASHBOARD_TUI=1
+WorkingDirectory=/home/ai-admin
+ExecStart=/home/ai-admin/.hermes/hermes-agent/venv/bin/hermes dashboard --host 127.0.0.1 --port 9119 --no-open --tui
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

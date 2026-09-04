@@ -1,0 +1,9 @@
+[Unit]
+Description=Hektor Control Plane Backup
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/ai-admin/scripts/hektor-control-plane-backup.sh
+TimeoutStartSec=120s

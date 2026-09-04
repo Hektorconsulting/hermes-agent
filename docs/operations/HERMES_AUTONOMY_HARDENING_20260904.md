@@ -35,7 +35,7 @@ files are mirrors or source artifacts only.
 | OpenClaw | Edge agent and messaging execution | `/usr/lib/node_modules/openclaw`; systemd launcher | version `2026.9.1`, latest registry version read back | Vault-backed secret, gateway | Mobile/Tailscale pairing remains external |
 | n8n | Workflow execution and MCP workflow surface | existing VPS deployment | existing authenticated path reused | OAuth/MCP, credentials | Maintain reviewed workflow allowlist |
 | Vault/secret authority | Raw secret source for runtime consumers | existing Vault-backed launcher | secret values not read or persisted | OpenClaw/Hermes consumers | Keep consumer references redacted |
-| Backup/health automation | Recovery and runtime observation | managed backup script and existing Hermes health timers | backup/archive and isolated restore rehearsal PASS | systemd, storage | Keep scheduled artifact checks and alerting |
+| Backup/health automation | Recovery and runtime observation | managed backup service/timer plus existing Hermes health timers | backup/archive and isolated restore rehearsal PASS | systemd, storage | Keep scheduled artifact checks and alerting |
 | UFW/exposure | Network boundary | VPS firewall | default deny inbound; Docker `DOCKER-USER` drops admin ports 81/8082; OpenClaw remains limited to Docker ranges | Cloudflare/NGINX/NPM policy | Tailscale login is still required for mobile route |
 
 ## Evidence and redaction
@@ -79,6 +79,11 @@ files are mirrors or source artifacts only.
 - OpenClaw server-side evidence covers authenticated integration discovery,
   result return, bounded Telegram voice ingestion, model routing and all
   normalized A2A agent-card endpoints. No external message was sent.
+- The obsolete public Hermes dashboard proxy host was retired after its
+  upstream was proven to be an unauthenticated loopback-only dashboard. The
+  dashboard remains managed on loopback port `9119`; the public admin/gateway
+  ports remain fail-closed by the existing firewall and Docker exposure
+  policy.
 
 ## Remaining external gates
 

@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Hektor Control Plane Backup daily
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=24h
+RandomizedDelaySec=10min
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

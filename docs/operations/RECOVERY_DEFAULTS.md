@@ -26,7 +26,7 @@ overwrite the canonical runtime.
 | OpenClaw gateway | active user unit, `Restart=always`, 120-second watchdog | watchdog launcher checks readiness and systemd restarts on failure |
 | OpenClaw guards | self-heal, session-guard, upstream-watch and Telegram-canary timers active | timer-driven checks and corrective actions remain bounded by their scripts |
 | Docker exposure | `hermes-docker-exposure-guard.service` plus five-minute timer active | private gateway allows are reconciled before public drops; admin ports 81/8082 fail closed |
-| Control-plane backup | existing `hektor-control-plane-backup.sh` and backup timer | creates chmod-600 archives containing runtime metadata, databases, NPM state and Vault snapshot |
+| Control-plane backup | `hektor-control-plane-backup.service` plus daily persistent timer | creates chmod-600 archives containing runtime metadata, databases, NPM state, shared knowledge and Vault snapshot |
 | Health observation | existing Hermes stack health service/timer | emits bounded service and endpoint observations for recovery handling |
 | Knowledge persistence | canonical SQLite database plus local mirror | write-back is redacted, namespace-scoped and content-addressed for retry safety |
 
