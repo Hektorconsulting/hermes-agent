@@ -65,6 +65,7 @@ Each item is external or physical and has no remaining technical preparation:
 | Grant device permissions | Smartphone settings | Allow only required microphone/notification permissions | Audio and notifications work |
 | Pair WhatsApp when desired | WhatsApp/GOWA pairing screen | Scan the displayed QR code | WhatsApp session becomes connected |
 | Complete provider consent if prompted | Google/provider login page | Approve OAuth, 2FA or CAPTCHA manually | Authorized session is available |
+| Confirm ADAM external data target when needed | Supabase project/owner context | Confirm the intended external project and scope | Any later RLS or real-data operation has an authorized target |
 | Activate real external communication | Respective channel | Explicitly enable/send the intended message | External delivery occurs under owner control |
 
 These actions do not block the Hermes Desktop -> Codex/n8n control plane.

@@ -71,9 +71,9 @@
       "area": "adam-supabase-rls",
       "owner": "hermes",
       "executor": "hermes",
-      "state": "TECHNICAL_SCOPE_GATED",
+      "state": "OWNER_PERMISSION_CONDITIONAL",
       "scope": "canonical ADAM repository, external Supabase target proof, owner/admin/customer isolation",
-      "next": "Use proven target before migrations; no real-data import without target and ownership proof"
+      "next": "Owner confirms the external Supabase target and scope before any real-data or RLS operation"
     },
     {
       "area": "paperclip-approvals",

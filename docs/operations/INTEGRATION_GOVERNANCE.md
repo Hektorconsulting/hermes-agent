@@ -17,7 +17,7 @@ readback; absence in a new probe is not proof of absence in the system.
 | Backups / Docker / Watchtower | Hermes | PASS | Managed backup/timer, rollback paths and non-destructive restore rehearsal are complete. |
 | OpenClaw | OpenClaw via Hermes | SERVER_READY / MOBILE_DEFERRED | Server runtime and Vault-backed launcher are technical scope; Tailscale login and device pairing are external gates. |
 | Google Workspace | Hermes / n8n | CONSENT_CONDITIONAL | Reuse an existing authorized session; interactive OAuth, 2FA or CAPTCHA is an owner gate only when unavoidable. |
-| ADAM / Supabase | Hermes | TARGET_GATED | Prove the effective external target and preserve owner/admin/customer isolation before data or RLS changes. |
+| ADAM / Supabase | Hermes | OWNER_PERMISSION_CONDITIONAL | Owner must confirm the effective external target and scope before any real-data or RLS operation; owner/admin/customer isolation remains mandatory. |
 | Paperclip | Paperclip / Hermes | GOVERNANCE_REQUIRED | Keep irreversible, elevated-risk, external and financial operations approval-gated. |
 | Models / OpenRouter | Hermes | PASS_FREE_FIRST | Current tool-capable cost-efficient routing and fallbacks are catalog-verified; no paid benchmark required. |
 | Windows / VS Code | Hermes | PASS_AUTOMATED_STARTUP | Startup, reconnect and exact project identity are engineering work; existing watchdog/recovery controls are active and physical sign-in remains a gate. |
