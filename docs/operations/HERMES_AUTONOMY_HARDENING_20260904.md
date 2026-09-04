@@ -51,8 +51,8 @@ files are mirrors or source artifacts only.
 - VPS shared knowledge status: integrity `ok`; `knowledge_tasks` present;
   hardening and policy write-backs archived and redacted.
 - Canonical DB status after the namespace migration and subsequent redacted
-  write-backs: 23,025 sources, 9 sessions, 9 requirements, 9 results, 9
-  events and 7 tasks; existing result rows are namespace-scoped.
+  write-backs: 23,025 sources, 11 sessions, 11 requirements, 11 results, 11
+  events and 9 tasks; existing result rows are namespace-scoped.
 - The namespace migration was backed up at
   `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db.before-result-namespace-20260904.bak`;
   the gateway restarted successfully afterwards.
