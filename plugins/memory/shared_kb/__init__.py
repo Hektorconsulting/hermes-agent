@@ -7,6 +7,7 @@ from typing import Any, Dict, List
 
 from agent.memory_provider import MemoryProvider
 from tools.shared_knowledge.bridge import KnowledgeBridge
+from tools.task_envelope import TaskEnvelope
 
 
 class SharedKnowledgeProvider(MemoryProvider):
@@ -15,6 +16,7 @@ class SharedKnowledgeProvider(MemoryProvider):
         self.bridge: KnowledgeBridge | None = None
         self.session_id = ""
         self.platform = ""
+        self.context: Dict[str, Any] = {}
 
     @property
     def name(self) -> str:
@@ -26,6 +28,7 @@ class SharedKnowledgeProvider(MemoryProvider):
     def initialize(self, session_id: str, **kwargs) -> None:
         self.session_id = session_id or ""
         self.platform = kwargs.get("platform", "cli")
+        self.context = dict(kwargs)
         path = self.config.get("db_path") or os.environ.get("HERMES_KNOWLEDGE_DB")
         if not path:
             try:
@@ -46,7 +49,19 @@ class SharedKnowledgeProvider(MemoryProvider):
     def prefetch(self, query: str, *, session_id: str = "") -> str:
         if not self.bridge or not query or not query.strip():
             return ""
+        envelope = TaskEnvelope.from_mapping({
+            "task_id": session_id or self.session_id,
+            "session_id": session_id or self.session_id,
+            "channel": self.platform,
+            "assigned_to": "hermes",
+            "system_scope": "hermes",
+            "privacy_scope": "system",
+            "objective": query,
+            "parent_task_id": self.context.get("parent_task_id", ""),
+            "provenance": {"agent_context": self.context.get("agent_context", "primary"), "provider": self.name},
+        })
         result = self.bridge.preflight({
+            **envelope.to_dict(),
             "task_id": session_id or self.session_id,
             "session_id": session_id or self.session_id,
             "channel": self.platform,
@@ -66,20 +81,43 @@ class SharedKnowledgeProvider(MemoryProvider):
         return "\n".join(lines) if len(lines) > 1 else ""
 
     def sync_turn(self, user_content: str, assistant_content: str, *, session_id: str = "", messages: List[Dict[str, Any]] | None = None) -> None:
-        if not self.bridge or not user_content or not assistant_content:
+        if not self.bridge or not user_content:
             return
         sid = session_id or self.session_id
-        task_id = sid or "hermes-session"
+        task = TaskEnvelope.from_mapping({
+            "task_id": sid or "hermes-session", "session_id": sid,
+            "channel": self.platform, "assigned_to": "hermes",
+            "system_scope": "hermes", "privacy_scope": "system",
+            "objective": user_content,
+            "provenance": {"provider": self.name, "agent_context": self.context.get("agent_context", "primary")},
+        })
         self.bridge.writeback({
-            "task_id": task_id,
-            "session_id": sid,
+            "task_envelope": task.to_dict(),
+            "task_id": task.task_id,
+            "session_id": task.session_id,
             "channel": self.platform,
             "agent_id": "hermes",
             "privacy_scope": "system",
             "event_type": "turn_writeback",
             "archive": messages if messages is not None else [{"role": "user", "content": user_content}, {"role": "assistant", "content": assistant_content}],
             "requirement": {"objective": user_content, "namespace": "system", "status": "draft"},
-            "result": {"summary": assistant_content, "status": "draft"},
+            "result": {"summary": assistant_content or "(no assistant response)", "status": "completed"},
+        })
+
+    def on_session_end(self, messages: List[Dict[str, Any]]) -> None:
+        """Persist the latest complete transcript at the session boundary."""
+        if not self.bridge or not messages:
+            return
+        self.bridge.writeback({
+            "task_id": self.session_id or "hermes-session",
+            "session_id": self.session_id,
+            "channel": self.platform,
+            "agent_id": "hermes",
+            "privacy_scope": "system",
+            "event_type": "session_archive",
+            "archive": messages,
+            "objective": "Archive the completed Hermes session",
+            "result": {"summary": "Session transcript archived", "status": "archived"},
         })
 
     def get_tool_schemas(self) -> List[Dict[str, Any]]:
