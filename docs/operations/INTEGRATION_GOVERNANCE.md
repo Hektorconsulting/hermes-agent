@@ -13,7 +13,7 @@ readback; absence in a new probe is not proof of absence in the system.
 | shared_kb | Hermes | PASS | Canonical VPS DB; results are namespace-scoped; archives and provenance are redacted. |
 | n8n | Hermes | VERIFIED_REUSED | Reuse the authenticated MCP/workflow path and reviewed allowlist; n8n holds references, not raw secret authority. |
 | Vault | Hermes | GOVERNED | Vault or the existing secret store is authoritative; never put values in logs, packs or write-backs. |
-| Cloudflare / DNS / NGINX | Hermes | PARTIAL | Keep public edge routes intentional and administrative surfaces private. Port 81 is not publicly allowed by UFW. |
+| Cloudflare / DNS / NGINX | Hermes | PARTIAL | Keep public edge routes intentional and administrative surfaces private. Port 81 is not publicly allowed by UFW and Docker `DOCKER-USER` policy is reconciled by a timer. |
 | Backups / Docker / Watchtower | Hermes | EXISTING_AUTOMATION | Preserve backup and rollback paths; schedule a non-destructive restore rehearsal. |
 | OpenClaw | OpenClaw via Hermes | SERVER_READY / MOBILE_DEFERRED | Server runtime and Vault-backed launcher are technical scope; Tailscale login and device pairing are external gates. |
 | Google Workspace | Hermes / n8n | CONSENT_CONDITIONAL | Reuse an existing authorized session; interactive OAuth, 2FA or CAPTCHA is an owner gate only when unavoidable. |

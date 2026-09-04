@@ -56,6 +56,11 @@ files are mirrors or source artifacts only.
 - The namespace migration was backed up at
   `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db.before-result-namespace-20260904.bak`;
   the gateway restarted successfully afterwards.
+- The Docker exposure policy is now persisted by
+  `hermes-docker-exposure-guard.service` plus its five-minute timer. IPv4
+  allows for Docker networks `172.18.0.0/16` and `172.30.0.0/16` precede the
+  OpenClaw 18789 drop; IPv6 administrative ports 18789, 8082 and 81 fail
+  closed. The live service and timer are active.
 - No credential values, tokens, passwords, API keys or `.env` values are part
   of this artifact.
 
