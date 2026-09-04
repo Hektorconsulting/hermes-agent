@@ -1,0 +1,119 @@
+{
+  "registry_id": "hermes-integrations-v1",
+  "source_of_truth": "canonical-vps-shared-kb",
+  "evidence_policy": "reuse-current-evidence-before-targeted-readback",
+  "components": [
+    {
+      "area": "hermes-core",
+      "owner": "hermes-desktop",
+      "executor": "hermes",
+      "state": "VERIFIED_REUSED",
+      "scope": "Bjorn -> Hermes Desktop -> Codex -> n8n -> Hermes Synthesis -> shared_kb",
+      "next": "Do not re-audit without relevant mutation"
+    },
+    {
+      "area": "shared-kb",
+      "owner": "hermes",
+      "executor": "hermes",
+      "state": "PASS",
+      "scope": "preflight, namespace-scoped results, session archive, provenance, writeback",
+      "next": "Hermes lifecycle review after startup"
+    },
+    {
+      "area": "n8n",
+      "owner": "hermes",
+      "executor": "hermes",
+      "state": "VERIFIED_REUSED",
+      "scope": "authenticated MCP/workflow path; allowlisted internal workflows; credentials remain references",
+      "next": "Maintain allowlist and credential ownership; no raw credential persistence"
+    },
+    {
+      "area": "vault-secrets",
+      "owner": "hermes",
+      "executor": "hermes",
+      "state": "GOVERNED",
+      "scope": "Vault or existing secret store is authoritative; consumers receive references",
+      "next": "Catalog consumers and rotate only through existing owner-authorized process"
+    },
+    {
+      "area": "cloudflare-dns-nginx",
+      "owner": "owner-or-hermes",
+      "executor": "hermes",
+      "state": "PARTIAL",
+      "scope": "public edge routes only; admin surfaces private; no public NPM admin port",
+      "next": "Targeted route/readback only when changing exposure or domain ownership"
+    },
+    {
+      "area": "backups-docker-watchtower",
+      "owner": "hermes",
+      "executor": "hermes",
+      "state": "EXISTING_AUTOMATION",
+      "scope": "backup scripts, health timers, Docker runtime and recovery documentation",
+      "next": "Non-destructive restore rehearsal when maintenance window is available"
+    },
+    {
+      "area": "openclaw-telegram-audio",
+      "owner": "hermes",
+      "executor": "openclaw",
+      "state": "SERVER_READY_MOBILE_DEFERRED",
+      "scope": "Vault-backed gateway; Telegram/audio execution; shared task provenance",
+      "next": "Tailscale login, app installation, QR/device pairing and audio test are physical/external gates"
+    },
+    {
+      "area": "google-drive-oauth",
+      "owner": "owner-or-hermes",
+      "executor": "hermes-or-n8n",
+      "state": "OWNER_CONSENT_CONDITIONAL",
+      "scope": "Drive/Docs/Sheets/Gmail/Calendar source-of-truth integrations",
+      "next": "Reuse authorized session; request interactive OAuth/2FA/CAPTCHA only when unavoidable"
+    },
+    {
+      "area": "adam-supabase-rls",
+      "owner": "hermes",
+      "executor": "hermes",
+      "state": "TECHNICAL_SCOPE_GATED",
+      "scope": "canonical ADAM repository, external Supabase target proof, owner/admin/customer isolation",
+      "next": "Use proven target before migrations; no real-data import without target and ownership proof"
+    },
+    {
+      "area": "paperclip-approvals",
+      "owner": "hermes",
+      "executor": "paperclip-or-hermes",
+      "state": "GOVERNANCE_REQUIRED",
+      "scope": "approval records, elevated-risk actions and delegation policy",
+      "next": "Keep irreversible, external and financial actions behind owner approval"
+    },
+    {
+      "area": "model-routing-costs",
+      "owner": "hermes",
+      "executor": "hermes",
+      "state": "TECHNICAL_OPTIMIZATION",
+      "scope": "OpenRouter/provider/model selection, free-first routing and fallback",
+      "next": "Use current available tool-capable model; never run unnecessary paid benchmarks"
+    },
+    {
+      "area": "windows-autostart-vscode",
+      "owner": "owner-or-hermes",
+      "executor": "hermes",
+      "state": "TECHNICAL_OPTIMIZATION",
+      "scope": "Hermes Desktop launch, Codex project identity and local reconnect behavior",
+      "next": "Repair startup/reconnect autonomously; physical sign-in remains a gate"
+    },
+    {
+      "area": "knowledge-lifecycle",
+      "owner": "hermes",
+      "executor": "hermes",
+      "state": "PASS",
+      "scope": "source registry, namespace policy, archive, provenance, task lineage and local mirror",
+      "next": "Mark stale/conflicting sources during normal lifecycle review"
+    }
+  ],
+  "hard_gates": [
+    "interactive OAuth consent, 2FA or CAPTCHA",
+    "physical smartphone installation, permissions, QR pairing or device approval",
+    "missing external account or organization permission",
+    "irreversible deletion without a verified restore path",
+    "real external customer/payment communication",
+    "new paid contract or financial commitment"
+  ]
+}
