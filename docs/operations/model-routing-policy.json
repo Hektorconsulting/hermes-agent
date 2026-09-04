@@ -1,0 +1,14 @@
+{
+  "policy_id": "hermes-model-routing-20260904",
+  "status": "active",
+  "selection_order": [
+    "active_available_tool_capable_model",
+    "free_or_lowest_cost_compatible_model",
+    "higher_capability_only_when_required",
+    "configured_compatible_fallback"
+  ],
+  "benchmark_policy": "no unnecessary paid benchmark",
+  "secret_policy": "never persist provider credentials or secret values",
+  "provenance_fields": ["provider", "model_id", "cost_tier", "fallback", "reason"],
+  "remaining_optimization": "reconcile active Hermes Desktop model identifier with current provider catalog"
+}

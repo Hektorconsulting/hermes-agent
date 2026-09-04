@@ -45,14 +45,14 @@ files are mirrors or source artifacts only.
 - Python compilation passed for all changed runtime modules.
 - VPS runtime file SHA-256 values matched the local Git checkout.
 - Fork persistence is configured as `origin=https://github.com/Hektorconsulting/hermes-agent.git`
-  with `upstream=https://github.com/NousResearch/hermes-agent.git`; commit
-  `a9f82620d` is present on the fork and the deployed bridge hash is
+  with `upstream=https://github.com/NousResearch/hermes-agent.git`; the current
+  owner-fork head is `d96668ae4` and the deployed bridge hash is
   `71adb302f5e990eb477295649048a418a1741c7a19bf03746c9cccfff835ac5e`.
 - VPS shared knowledge status: integrity `ok`; `knowledge_tasks` present;
   hardening and policy write-backs archived and redacted.
-- Canonical DB status after the namespace migration: 23,025 sources, 6
-  sessions, 6 requirements, 6 results, 6 events and 4 tasks; all existing
-  result rows are `system`-scoped by migration default.
+- Canonical DB status after the namespace migration and subsequent redacted
+  write-backs: 23,025 sources, 9 sessions, 9 requirements, 9 results, 9
+  events and 7 tasks; existing result rows are namespace-scoped.
 - The namespace migration was backed up at
   `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db.before-result-namespace-20260904.bak`;
   the gateway restarted successfully afterwards.

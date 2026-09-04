@@ -1,0 +1,16 @@
+{
+  "policy_id": "hermes-recovery-defaults-20260904",
+  "status": "active",
+  "backup_retention_count": 7,
+  "backup_file_mode": "0600",
+  "rpo_target": "last successful scheduled backup",
+  "rto_target": "bounded service restart first; restore only after an isolated recovery decision",
+  "restore_mode": "non-destructive rehearsal or explicit rollback target",
+  "secret_policy": "restore references and secret-store bindings, never literal secret values",
+  "network_policy": "public edge only for intentional 80/443 routes; admin and gateway paths private",
+  "restart_policy": "systemd-managed, bounded and observable",
+  "authoritative_openclaw_unit": "ai-admin user openclaw-gateway.service",
+  "legacy_openclaw_unit": "/etc/systemd/system/openclaw-gateway.service (disabled/inactive)",
+  "recovery_sequence": ["DETECT", "LOG_REDACTED", "RETRY_BOUNDED", "SELF_HEAL", "VERIFY", "WRITE_BACK"],
+  "remaining_follow_up": "isolated non-destructive restore rehearsal"
+}
