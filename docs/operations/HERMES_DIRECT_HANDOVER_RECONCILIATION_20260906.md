@@ -74,6 +74,11 @@ large runtime transcript.
   API, assigned to `ai-admin:ai-admin` with mode `0750`, and loaded by a
   restarted Gateway. The live Gateway now has the bridge child process and
   processed `tools/list` successfully.
+- VPS Telegram authorization: `TELEGRAM_ALLOWED_USERS` is now configured for
+  the Owner identity already present in Hermes’ local platform profile, while
+  `GATEWAY_ALLOW_ALL_USERS` remains absent. The gateway restart produced no
+  further “No user allowlists configured” warning. A real inbound/outbound
+  Owner-DM exchange remains the only missing external proof.
 
 ## Next autonomous work queue
 
