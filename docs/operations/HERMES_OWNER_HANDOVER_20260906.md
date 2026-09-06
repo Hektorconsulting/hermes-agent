@@ -48,6 +48,17 @@ OpenClaw:        /usr/lib/node_modules/openclaw
 Use the existing bounded SSH/PowerShell bridge and private tunnels. Do not
 create a public Ollama listener.
 
+Hermes' full VPS operational profile is defined in
+`HERMES_VPS_FULL_ACCESS_PROFILE_20260906.md`. The effective remote working
+scope is `/home/ai-admin`; Ollama is only one private service inside that
+scope. Hermes may inventory and coordinate Hermes, shared SQLite knowledge,
+OpenClaw, n8n/MCP, Docker/Compose, systemd/PM2/cron, NGINX, Redis, Vault
+references, logs and backups through the reviewed bridge. This gives Hermes
+broader orchestration authority than Codex's individual execution surface.
+It does not authorize copying secret values or bypassing authentication,
+tenant isolation, auditability or the explicit external/customer/payment and
+irreversible-change gates.
+
 ## Control-plane handshakes
 
 ```text

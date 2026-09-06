@@ -25,6 +25,7 @@
     {"path": "C:\\Users\\Björn\\Pictures\\Screenshots\\Hermes Agent", "classification": "READ_ALLOWED", "purpose": "46 screenshot evidence files; evidence only"}
   ],
   "remote_sources": [
+    {"path": "ssh://hostinger-vps/home/ai-admin", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "complete private VPS operational scope for Hermes orchestration; inventory and service metadata only, with secret values excluded"},
     {"path": "ssh://hostinger-vps/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "canonical shared knowledge database"},
     {"path": "ssh://hostinger-vps/home/ai-admin/.hermes/hermes-agent", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "VPS Hermes runtime"},
     {"path": "ssh://hostinger-vps/usr/lib/node_modules/openclaw", "classification": "READ_ALLOWED", "purpose": "OpenClaw server installation"},
@@ -41,6 +42,7 @@
     "HERMES_CODEX_HANDSHAKE_20260906.md",
     "MODEL_ROUTING_POLICY.md",
     "OPENCLAW_SERVER_SIDE_EVIDENCE_20260904.md",
+    "HERMES_VPS_FULL_ACCESS_PROFILE_20260906.md",
     "INTEGRATION_GOVERNANCE.md",
     "SYSTEM_AUTONOMY_READY_20260904.md",
     "RECOVERY_DEFAULTS.md"
