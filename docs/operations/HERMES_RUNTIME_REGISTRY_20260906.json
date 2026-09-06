@@ -41,7 +41,7 @@
       "purpose": "registry, handover and shared-kb projection",
       "transport": "stdio",
       "scope": "redacted registry and knowledge projection",
-      "status": "verified_connected_tools_12"
+      "status": "verified_connected_tools_12_gateway_attestation_pass_full_readback_pending"
     }
   },
   "providers": {

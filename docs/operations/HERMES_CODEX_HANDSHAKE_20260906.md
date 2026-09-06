@@ -23,6 +23,8 @@ The resulting fact is present in `C:\Hermes\memories\MEMORY.md` under `Codex-Her
 
 A second fresh Hermes session enabled `codex-executor` together with file and memory tools. Hermes called the Codex-Executor MCP and received a read-only runtime status report. Hermes explicitly confirmed that Codex is its technical execution and review colleague and that no secrets, cookies or private keys were transferred. The MCP handshake is therefore verified at both connection level and agent-use level.
 
+The Platform-Reuse-Catalog MCP required a Windows-specific attestation repair: Hermes starts the stdio adapter through an intermediate agent process, so the adapter now validates the bounded Windows process ancestry against the gateway-owned `C:\Hermes\gateway.pid` record. The live gateway canary recorded `runtime_attestation_status=PASS`, `runtime_consumer=Hermes Gateway`, and `external_writes=false`. A complete catalog readback remains a separate acceptance item until all required read-only catalog tools have been invoked by the gateway runtime.
+
 ## Ongoing operation
 
 - Hourly: `Hermes inkrementeller Wissens-Refresh` (`17727160b910`) runs the redacted metadata monitor without an LLM, persists its state, and emits only changed paths/counts.
