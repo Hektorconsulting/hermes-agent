@@ -61,6 +61,15 @@ ist aber als eigenständiger CLI-Test kein PASS.
   Die aktive Telegram-Session des Owners `8196825649` ist in der OpenClaw-
   Sessionliste vorhanden. Das ist ein OpenClaw-Telegram-Nachweis, nicht der
   Nachweis eines separaten Hermes-Bot-Tokens.
+- Der aktuelle VPS-Hermes-Token wurde anschließend aus dem lokalen Hermes-
+  Secret-Store über stdin in die geschützte VPS-`.env` übertragen. Der
+  redigierte Hash stimmt auf beiden Seiten überein; ein VPS-`getMe` bestätigt
+  `hektor_hermes_agent_bot` (Hermes Agent).
+- Der lokale Windows-Hermes-Poller wurde beendet, weil derselbe Bot nicht
+  gleichzeitig lokal und auf dem VPS per `getUpdates` pollen darf.
+- Die früheren `InvalidToken`- und Conflict-Zeilen gehören zum Start vor der
+  Tokenkorrektur. Seit dem korrigierten Neustart und dem Stop des lokalen
+  Pollers wurden keine neuen Telegram-Fehler oder Polling-Konflikte geloggt.
 
 ## Nächster sicherer Integrationsschritt
 
@@ -76,6 +85,8 @@ ist aber als eigenständiger CLI-Test kein PASS.
 ACCESS = VERIFIED` ist durch den aktiven MCP-Child-Prozess, dessen
 MCP-Handshake und den authentifizierten Health-Call belegt. Ein mutierender
 OpenClaw-Agentenkanal bleibt absichtlich nicht freigeschaltet. `TELEGRAM E2E
-OPENCLAW OWNER CHANNEL = VERIFIED`; `TELEGRAM E2E CURRENT VPS HERMES BOT =
-NOT VERIFIED`, solange kein separater aktueller Hermes-Bot-Token zugeordnet
-ist.
+OPENCLAW OWNER CHANNEL = VERIFIED`; `TELEGRAM CURRENT VPS HERMES BOT =
+VERIFIED` für Bot-Identität, Secret-Zuordnung, Allowlist und konfliktfreien
+laufenden Poller. Eine vom Owner gesendete neue Chatnachricht wurde in diesem
+Schritt nicht künstlich erzeugt; daher ist die vollständige Inbound-Agent-
+Antwort als separater E2E-Test noch ausstehend.
