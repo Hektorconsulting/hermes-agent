@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-06",
+  "purpose": "Authoritative, redacted source map for staged Hermes learning.",
+  "load_policy": {
+    "hourly": "read metadata and changed allowlisted sources only; deduplicate by path and mtime/size or digest",
+    "daily": "reconcile all listed source classes and refresh verified runtime observations",
+    "never": "copy secret values, cookies, private keys, bot tokens, API keys, or arbitrary env values"
+  },
+  "owner_profile": {
+    "path": "C:\\Hermes\\hermes-agent\\docs\\operations\\HERMES_BJOERN_PROFILE_20260906.md",
+    "classification": "READ_ALLOWED",
+    "purpose": "owner identity, working style, project scope and decision boundaries"
+  },
+  "local_sources": [
+    {"path": "C:\\Hermes", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "Hermes runtime, state, logs, skills and workspaces"},
+    {"path": "C:\\Hermes\\config.yaml", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "provider, tools and runtime configuration; values must be redacted"},
+    {"path": "C:\\Hermes\\memories\\MEMORY.md", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "stable Hermes facts and preferences"},
+    {"path": "C:\\Hermes\\memories\\USER.md", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "owner-facing memory"},
+    {"path": "C:\\Hermes\\hermes-agent\\docs\\operations", "classification": "READ_ALLOWED", "purpose": "versioned handovers, policies, registries, evidence and runbooks"},
+    {"path": "C:\\Users\\Björn\\Documents\\Codex\\repos\\ADAM", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "canonical ADAM repository; preserve mixed worktree and do not expose secrets"},
+    {"path": "C:\\Users\\Björn\\Documents\\Codex\\repos\\platform-reuse-core", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "MCP, registry and shared-knowledge projection"},
+    {"path": "C:\\Users\\Björn\\.codex", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "Codex skills, memory references and runtime metadata"},
+    {"path": "C:\\Users\\Björn\\AppData\\Local\\OpenAI\\Codex", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "Codex executable and local runtime metadata"},
+    {"path": "C:\\Users\\Björn\\Pictures\\Screenshots\\Hermes Agent", "classification": "READ_ALLOWED", "purpose": "46 screenshot evidence files; evidence only"}
+  ],
+  "remote_sources": [
+    {"path": "ssh://hostinger-vps/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "canonical shared knowledge database"},
+    {"path": "ssh://hostinger-vps/home/ai-admin/.hermes/hermes-agent", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "VPS Hermes runtime"},
+    {"path": "ssh://hostinger-vps/usr/lib/node_modules/openclaw", "classification": "READ_ALLOWED", "purpose": "OpenClaw server installation"},
+    {"path": "ssh://hostinger-vps/http://127.0.0.1:11434", "classification": "READ_ALLOWED", "purpose": "private Ollama endpoint; access through SSH/internal route only"},
+    {"path": "ssh://hostinger-vps/http://127.0.0.1:18789", "classification": "READ_ALLOWED", "purpose": "private OpenClaw gateway health and API surface"}
+  ],
+  "versioned_handover_documents": [
+    "HERMES_OWNER_HANDOVER_20260906.md",
+    "HERMES_RUNTIME_REGISTRY_20260906.json",
+    "HERMES_AUTONOMY_INITIALIZATION_20260906.md",
+    "HERMES_SCREENSHOT_EVIDENCE_20260906.json",
+    "HERMES_BJOERN_PROFILE_20260906.md",
+    "HERMES_KNOWLEDGE_SOURCE_MANIFEST_20260906.json",
+    "HERMES_CODEX_HANDSHAKE_20260906.md",
+    "MODEL_ROUTING_POLICY.md",
+    "OPENCLAW_SERVER_SIDE_EVIDENCE_20260904.md",
+    "INTEGRATION_GOVERNANCE.md",
+    "SYSTEM_AUTONOMY_READY_20260904.md",
+    "RECOVERY_DEFAULTS.md"
+  ]
+}
