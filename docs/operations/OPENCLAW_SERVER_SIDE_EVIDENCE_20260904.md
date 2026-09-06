@@ -45,3 +45,18 @@ remain blocked by policy.
 The three A2A card URLs previously pointed to non-existent `/a2a/openclaw`,
 `/a2a/hermes` and `/a2a/paperclip-lite` paths. They now point to the
 implemented normalized card endpoints and were backed up before the change.
+
+## Current live reconciliation (2026-09-06)
+
+The current listener on `hostinger-vps:127.0.0.1:18789` returns
+`{"ok":true,"status":"live"}` for `GET /health`. The previously listed
+FastAPI control-plane paths were probed again from the VPS: `GET /health/detailed`
+returned `Not Found`, while `/mcp/health`, `/integrations/status`,
+`/agents/readiness`, `/execution-results` and `/models/route` returned the
+OpenClaw Control UI rather than the documented JSON API. Therefore the current
+runtime classification is `SERVER_HEALTH_VERIFIED / CONTROL_API_NOT_CURRENTLY_PROVEN`.
+The older 2026-09-04 evidence remains historical and must not be treated as
+current endpoint proof. Hermes should use the live health result, inspect the
+installed OpenClaw source/configuration, and mark authenticated API/A2A/result
+return as `PARTIAL` until a current canary proves the exact route and auth
+contract.
