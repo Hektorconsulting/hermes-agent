@@ -33,15 +33,21 @@ does not store provider credentials or secret values.
 
 ## Current reconciliation
 
-The active Hermes configuration uses `provider: auto` with
-`nvidia/nemotron-3-super-120b-a12b:free`. The current OpenRouter catalog
-contains that exact identifier with zero prompt/completion price and support
-for tools. The local Hermes fallback list now contains three catalog-valid,
-free, tool-capable alternatives:
+The live local configuration uses OpenRouter explicitly with the redacted
+credential-pool label `Hermes-G`. The primary route is a verified free,
+tool-capable OpenRouter model; the configured fallback sequence contains
+additional free models, `~deepseek/deepseek-v4-flash-latest`, LM Studio and a
+private local-compatible endpoint. The old `env:OPENROUTER_API_KEY` pool entry
+was removed from Hermes rotation after it produced the wrong-account 402
+behavior; the value remains intentionally undisclosed and is not re-added.
 
-- `z-ai/glm-5.2:free`
-- `minimax/minimax-m3:free`
-- `nvidia/nemotron-3.5-lightning:free`
+Paid OpenRouter requests are bounded by `model.context_length: 32768` so a
+large theoretical provider context cannot request an uncontrolled output
+budget. Full handover material remains available through the local files,
+SQLite knowledge projection and VPS shared-KB bridge and is read
+incrementally. Auxiliary traffic remains `free_only: true`.
 
-No model-ID replacement was necessary. The configuration was backed up and
-the local Hermes backend was reconnected so the fallback list is loaded.
+The current provider state must still be reported live because OpenRouter
+free quota and key budget are volatile. A 429 or 402 is classified and routed
+to an independent private fallback rather than retried through another
+OpenRouter-free model indefinitely.
