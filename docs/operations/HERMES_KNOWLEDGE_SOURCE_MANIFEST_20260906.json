@@ -19,6 +19,7 @@
     {"path": "C:\\Hermes\\hermes-agent\\docs\\operations", "classification": "READ_ALLOWED", "purpose": "versioned handovers, policies, registries, evidence and runbooks"},
     {"path": "C:\\Users\\Björn\\Documents\\Codex\\repos\\ADAM", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "canonical ADAM repository; preserve mixed worktree and do not expose secrets"},
     {"path": "C:\\Users\\Björn\\Documents\\Codex\\repos\\platform-reuse-core", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "MCP, registry and shared-knowledge projection"},
+    {"path": "C:\\Users\\Björn\\Documents\\Codex\\repos\\platform-reuse-core\\handoff\\compact\\projection\\hermes-control-plane.sqlite3", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "local read-only SQLite knowledge projection exposed through platform-reuse-catalog MCP"},
     {"path": "C:\\Users\\Björn\\.codex", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "Codex skills, memory references and runtime metadata"},
     {"path": "C:\\Users\\Björn\\AppData\\Local\\OpenAI\\Codex", "classification": "READ_ALLOWED_BUT_REDACTED", "purpose": "Codex executable and local runtime metadata"},
     {"path": "C:\\Users\\Björn\\Pictures\\Screenshots\\Hermes Agent", "classification": "READ_ALLOWED", "purpose": "46 screenshot evidence files; evidence only"}
