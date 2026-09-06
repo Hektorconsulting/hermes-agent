@@ -28,6 +28,14 @@ Hermes must not answer with a generic greeting only. It must perform a compact l
 
 Do not ask questions whose answers can be reconstructed from current files, memory, MCP, sessions, Git or live system checks. Do not ask all questions every time; ask only the missing ones.
 
+## E2E verification
+
+On 2026-09-06 a fresh Hermes session received the owner greeting and produced the complete German briefing. It live-verified the active OpenRouter/DeepSeek session, Windows terminal, Hostinger SSH, VPS Ollama, OpenClaw HTTP health and the three scheduled jobs. It correctly marked MCP and Telegram as `PARTIAL`/`CONFIGURED` because those surfaces were not loaded into that isolated session, rather than claiming a fresh live canary. It ended with exactly:
+
+`Was ist heute deine Priorität?`
+
+This proves the first-conversation protocol end to end. The terminal capture had a Windows code-page rendering artifact for umlauts, not a Hermes response-content failure.
+
 ## Weekly capability discovery
 
 Hermes owns the weekly discovery of new skills, MCP services, tools and plugins. It must compare official Hermes documentation, the installed catalog and relevant official provider/MCP sources, then store a deduplicated German digest with:

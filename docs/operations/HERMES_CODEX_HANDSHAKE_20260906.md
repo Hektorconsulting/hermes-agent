@@ -19,6 +19,10 @@ Hermes then used its memory tool in a second fresh session and returned:
 
 The resulting fact is present in `C:\Hermes\memories\MEMORY.md` under `Codex-Hermes-Handshake 2026-09-06`.
 
+## MCP execution verification
+
+A second fresh Hermes session enabled `codex-executor` together with file and memory tools. Hermes called the Codex-Executor MCP and received a read-only runtime status report. Hermes explicitly confirmed that Codex is its technical execution and review colleague and that no secrets, cookies or private keys were transferred. The MCP handshake is therefore verified at both connection level and agent-use level.
+
 ## Ongoing operation
 
 - Hourly: `Hermes inkrementeller Wissens-Refresh` (`17727160b910`) runs the redacted metadata monitor without an LLM, persists its state, and emits only changed paths/counts.
