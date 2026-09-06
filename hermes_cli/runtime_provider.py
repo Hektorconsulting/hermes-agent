@@ -2188,12 +2188,28 @@ def resolve_runtime_provider(
         cfg_base_url = str(model_cfg.get("base_url") or "").strip()
         env_openai_base_url = _getenv("OPENAI_BASE_URL", "").strip()
         env_openrouter_base_url = _getenv("OPENROUTER_BASE_URL", "").strip()
+        # The canonical OpenRouter URL is a provider default, not a custom
+        # endpoint override. Treating it as an override disables the pooled
+        # credential path and produces the misleading "no usable credentials"
+        # setup error when the URL is merely exported by the shell.
         has_custom_endpoint = bool(
             explicit_base_url
             or env_openai_base_url
-            or env_openrouter_base_url
+            or (
+                env_openrouter_base_url
+                and not base_url_host_matches(env_openrouter_base_url, "openrouter.ai")
+            )
         )
-        if cfg_base_url and cfg_provider in {"auto", "custom"}:
+        # A custom primary endpoint must not suppress the credential pool
+        # when a fallback explicitly requests OpenRouter.  The previous
+        # condition treated the primary model's loopback URL as a global
+        # OpenRouter override, so a valid pooled OpenRouter credential was
+        # never considered once Ollama became primary.
+        if (
+            cfg_base_url
+            and cfg_provider in {"auto", "custom"}
+            and requested_provider == "auto"
+        ):
             has_custom_endpoint = True
         has_runtime_override = bool(explicit_api_key or explicit_base_url)
         should_use_pool = (

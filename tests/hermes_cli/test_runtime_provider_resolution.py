@@ -86,6 +86,71 @@ def test_resolve_runtime_provider_uses_credential_pool(monkeypatch):
     assert resolved["source"] == "manual"
 
 
+def test_openrouter_pool_remains_available_when_custom_primary_is_configured(monkeypatch):
+    """An explicit OpenRouter fallback must not inherit the custom primary URL."""
+    class _Entry:
+        access_token = "pool-openrouter-key"
+        source = "manual"
+        base_url = "https://openrouter.ai/api/v1"
+
+    class _Pool:
+        def has_credentials(self):
+            return True
+
+        def select(self):
+            return _Entry()
+
+    monkeypatch.setattr(
+        rp,
+        "_get_model_config",
+        lambda: {
+            "provider": "custom",
+            "base_url": "http://127.0.0.1:11435/v1",
+            "default": "gemma4:e2b",
+        },
+    )
+    monkeypatch.setattr(rp, "load_pool", lambda provider: _Pool())
+
+    resolved = rp.resolve_runtime_provider(requested="openrouter")
+
+    assert resolved["provider"] == "openrouter"
+    assert resolved["base_url"] == "https://openrouter.ai/api/v1"
+    assert resolved["api_key"] == "pool-openrouter-key"
+    assert resolved["source"] == "manual"
+
+
+def test_canonical_openrouter_url_env_does_not_disable_pool(monkeypatch):
+    """The default OpenRouter URL is not a custom endpoint override."""
+    class _Entry:
+        access_token = "pool-openrouter-key"
+        source = "manual"
+        base_url = "https://openrouter.ai/api/v1"
+
+    class _Pool:
+        def has_credentials(self):
+            return True
+
+        def select(self):
+            return _Entry()
+
+    monkeypatch.setattr(
+        rp,
+        "_get_model_config",
+        lambda: {
+            "provider": "custom",
+            "base_url": "http://127.0.0.1:11435/v1",
+            "default": "gemma4:e2b",
+        },
+    )
+    monkeypatch.setenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    monkeypatch.setattr(rp, "load_pool", lambda provider: _Pool())
+
+    resolved = rp.resolve_runtime_provider(requested="openrouter")
+
+    assert resolved["provider"] == "openrouter"
+    assert resolved["api_key"] == "pool-openrouter-key"
+
+
 class TestCustomProviderPoolLoopbackNoKeyExemption:
     """Regression for issue #86864: legacy custom_providers configs often
     used short/placeholder api_keys ('123', 'm') for local no-auth
