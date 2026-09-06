@@ -1,5 +1,63 @@
 # Hermes Provider-Routing-Reconciliation — 2026-09-06
 
+> **Laufzeit-Nachtrag, 2026-09-06 15:20 UTC:** Dieser Abschnitt ersetzt
+> frühere PASS-Aussagen zu VPS-OpenRouter-Fallbacks. Er basiert auf dem
+> produktiven `hermes-gateway.service`, nicht nur auf Desktop- oder
+> Standalone-Resolver-Tests.
+
+## Verifizierter VPS-Incident und Reparatur
+
+Der VPS-Gateway lief auf Hermes Agent **v0.13.0**, während der lokale
+Desktop-/Fork-Stand v0.21.0 ist. Der Gateway las beim Start
+`/home/ai-admin/.hermes/.env` mit Überschreibrecht. Dort stand noch die
+veraltete Variable `HERMES_INFERENCE_PROVIDER`; sie zwang jeden
+Gateway-Agenten auf OpenRouter und überstimmte die konfigurierte private
+VPS-Ollama-Verbindung.
+
+Die Ursache ist behoben und reversibel dokumentiert:
+
+```text
+1. Sicherung erzeugt:
+   /home/ai-admin/.hermes/state/config-backups/
+2. model.provider präzisiert:
+   custom:vps-ollama
+3. agent.api_max_retries:
+   1 (statt 3)
+4. Ausschließlich die veraltete Provider-Variable aus .env entfernt.
+5. hermes-gateway.service kontrolliert neu gestartet.
+6. Gateway-Resolver danach:
+   provider=custom, base_url=http://127.0.0.1:11434/v1
+```
+
+Der aktuelle Gateway ist nach der Reparatur aktiv. Der private VPS-Ollama-
+Endpoint ist erreichbar. Ein vollwertiger Hermes-One-Shot-Canary der alten
+v0.13-Laufzeit wurde nach einem unverhältnismäßig langen Lauf kontrolliert
+abgebrochen; daraus wird **kein** Agenten-E2E-PASS abgeleitet.
+
+## Aktueller OpenRouter-Befund
+
+Das Hermes-G-Credential ist im geschützten Credential-Pool vorhanden und die
+Key-Metadaten konnten ohne Ausgabe von Secretwerten abgefragt werden. Die
+Free-Fallback-Kette ist jedoch derzeit **nicht nutzbar**:
+
+```text
+Grund: OpenRouter-Konto-/Guardrail-Policies
+  - Free-model-training nicht erlaubt
+  - Zero-Data-Retention für nicht passende Endpoints erzwungen
+
+Folgen:
+  - mehrere :free-Modelle liefern HTTP 404 wegen Policy-Filterung;
+  - z-ai/glm-5.2:free ist nicht mehr als Free-Slug verfügbar;
+  - die alte Kette wiederholte jeden Fehler dreimal.
+```
+
+Der Retry-Sturm ist durch `agent.api_max_retries: 1` begrenzt. Die
+OpenRouter-Privacy-/Guardrail-Einstellungen werden **nicht** automatisch
+gelockert: Das wäre eine eigenständige Datenverarbeitungsentscheidung. Bis
+zu einer expliziten Owner-Entscheidung bleibt VPS-Ollama der belastbare
+Primärpfad; OpenRouter-Free-Einträge sind lediglich konfiguriert, nicht als
+gesund bestätigt.
+
 ## Ergebnis
 
 Der OpenRouter-Fehler aus der Hermes-Desktop-Anzeige war kein Beleg für
@@ -24,7 +82,7 @@ Lokaler Hermes-Primärprovider:
   context   = 131072 (vom Ollama-Modell gemeldet)
 
 VPS-Hermes-Primärprovider:
-  provider  = custom
+  provider  = custom:vps-ollama
   model     = gemma4:e2b
   endpoint  = http://127.0.0.1:11434/v1
   context   = 131072
@@ -32,14 +90,9 @@ VPS-Hermes-Primärprovider:
 OpenRouter-Fallback:
   credential = Hermes-G
   endpoint   = https://openrouter.ai/api/v1
-  account key fingerprint (redacted) = 912b323c9058
-  key usage  = 0.032546782 USD at reconciliation time
-  key limit  = 2 USD
-  remaining  = 1.967453218 USD
+  credential metadata = verified without secret output
+  paid budget limit   = 2 USD (period semantics require separate verification)
 ~~~
-
-Das Fingerprintpräfix ist nur ein Vergleichsbeleg. Es ist kein API-Key und
-erlaubt keine Authentifizierung.
 
 ## Reproduzierte Befunde
 
@@ -90,9 +143,10 @@ credential source     = manual / Hermes-G
 VPS Ollama /v1/models                 = PASS
 VPS Ollama task-managed chat          = PASS
 Hermes local primary via VPS Ollama  = PASS
-Hermes OpenRouter fallback            = PASS
-OpenRouter /v1/key                    = PASS
-OpenRouter key cost after canaries    = unchanged at 0.032546782 USD
+VPS Gateway resolver via VPS Ollama   = PASS (nach .env-Override-Reparatur)
+Hermes OpenRouter Free fallback        = BLOCKED (Guardrail-/Privacy-Policy)
+OpenRouter credential metadata        = PASS (redigiert)
+DeepSeek paid live canary              = NOT RUN (kein Kosten-/Policy-Nachweis behauptet)
 ~~~
 
 Die lokale Ollama-Verbindung läuft über eine private SSH-Weiterleitung:
@@ -113,13 +167,16 @@ Ollama wurde nicht öffentlich exponiert.
 3. Der private SSH-Tunnel wurde task-sicher gemacht. Das PowerShell-Skript
    hält ssh jetzt im Scheduled-Task-Prozess und startet nicht nur einen
    kurzlebigen Detached-Wrapper. Der Task darf auch im Batteriebetrieb laufen.
-4. Auf dem VPS wurde der aktive OpenRouter-Pool auf Hermes-G korrigiert;
-   der alte erschöpfte Env-Credential ist nicht mehr aktiv.
-5. Der VPS-Hermes-Arbeitsbereich ist /home/ai-admin. Die redigierte
+4. Auf dem VPS wurde der stale Runtime-Override
+   `HERMES_INFERENCE_PROVIDER` aus der geschützten `.env` entfernt. Er hatte
+   den Gateway auf OpenRouter festgelegt und war die direkte Ursache dafür,
+   dass `gemma4:e2b` als OpenRouter-Modell angefragt wurde.
+5. Der Primary wurde von dem mehrdeutigen `custom` auf den gespeicherten
+   Namen `custom:vps-ollama` präzisiert; der Gateway-Resolver bestätigt
+   danach die private Ollama-Basis-URL.
+6. Die Retries pro Provider wurden auf einen Versuch begrenzt.
+7. Der VPS-Hermes-Arbeitsbereich ist /home/ai-admin. Die redigierte
    Besitzer-/Pfadübergabe liegt unter /home/ai-admin/AGENTS.md.
-6. Hermes verhindert jetzt nicht mehr, dass ein expliziter OpenRouter-Fallback
-   den Credential-Pool nutzt, wenn der Primärprovider ein lokaler Custom-
-   Endpoint ist.
 
 Die Resolveränderung ist durch gezielte Regressionstests abgesichert:
 
@@ -127,14 +184,22 @@ Die Resolveränderung ist durch gezielte Regressionstests abgesichert:
 3 passed, 64 deselected
 ~~~
 
-## Aktive Fallback-Reihenfolge
+## Konfigurierte und effektive Fallback-Reihenfolge
 
 ~~~
+Konfiguriert:
 1. VPS Ollama (Primärprovider)
-2. OpenRouter Free-Modelle
-3. DeepSeek V4 Flash Latest über OpenRouter
-4. LM Studio
-5. lokales Ollama
+2. OpenRouter :free-Modelle (derzeit durch Account-Policies blockiert)
+3. VPS-Ollama-Duplikat als letzte Rettung
+
+Effektiv verifiziert:
+1. VPS Ollama (Primärprovider)
+
+Nicht als PASS behauptet:
+- OpenRouter-Free-Modelle, solange deren Privacy-/Guardrail-Filter aktiv ist
+- DeepSeek V4 Flash Latest, solange kein kostenbewusster Test mit eindeutigem
+  Budget-/Privacy-Nachweis erfolgte
+- LM Studio und lokales Ollama als Remote-Gateway-Fallback
 ~~~
 
 Die Paid-Stufe bleibt durch das OpenRouter-Key-Limit von 2 USD technisch
@@ -146,12 +211,12 @@ auf Paid-Modelle hochstufen.
 ## Noch offen
 
 ~~~
-Telegram Owner-DM inbound E2E      = PENDING
-Telegram outbound canary           = SENT / verified by API (fresh message 48)
-Telegram current bot credential    = getMe PASS; current token is valid
-Telegram previous token            = invalid and excluded
-OpenClaw Telegram bot              = separate bot identity; no same-bot collision
-VPS OpenRouter fallback             = resolver PASS; live paid call not made
+Telegram Owner-DM inbound E2E      = PENDING (live Owner-Testnachricht fehlt)
+Telegram Bot API / Long Polling    = PASS; Allowlist und Runtime-Umgebung stimmen überein
+OpenClaw Employee Bridge            = PASS (authentifizierter read-only Canary)
+OpenClaw A2A/MCP Gateway           = PARTIAL (HTML-Fallback ist kein Protokollnachweis)
+VPS OpenRouter Free fallback       = BLOCKED (Privacy-/Guardrail-Policy)
+VPS Hermes-Version                 = OUTDATED (v0.13.0; Upgrade separat stagen)
 Desktop UI screenshot refresh      = requires reopening/reloading the view
 Full 46-screenshot file inventory  = independently re-counted (46 PNGs)
 Full screenshot semantic review    = evidence register exists; no executable instructions inferred
@@ -168,10 +233,11 @@ die Ursache eines Same-Bot-Polling-Konflikts.
 
 ## Aktueller Telegram-Nachweis
 
-Am 2026-09-06 wurde über den aktuellen VPS-Hermes-Token ein neuer privater
-Owner-Canary an Chat `8196825649` gesendet (Telegram message id `48`). Eine
-Antwort `HERMES-INBOUND-OK` wurde bis zum letzten Log-Check noch nicht
-empfangen. Deshalb bleibt Telegram Owner-DM inbound E2E bewusst `PENDING`.
+Bot-API, Long-Polling-Verbindung und genau eine Owner-Allowlist-Identität
+sind bestätigt. Ein vollständiger Inbound-/Antwort-Nachweis erfordert eine
+neu eingehende, erlaubte Owner-Nachricht und wird nicht durch unaufgeforderte
+externe Testnachrichten ersetzt. Deshalb bleibt Telegram Owner-DM inbound E2E
+bewusst `PENDING`.
 
 ## Reproduzierbare Prüfpfade
 
