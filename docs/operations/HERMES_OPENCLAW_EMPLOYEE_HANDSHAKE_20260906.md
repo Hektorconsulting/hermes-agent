@@ -4,10 +4,10 @@ Stand: 2026-09-06 08:18 Europe/Berlin
 
 ## Ergebnis
 
-Der OpenClaw-Server ist auf dem Hostinger-VPS erreichbar. Ein vollständiger
-Hermes-zu-OpenClaw-Agenten-Handschlag ist dagegen noch nicht nachgewiesen.
-Hermes darf OpenClaw deshalb derzeit als erreichbare interne Zielkomponente
-behandeln, nicht als bereits konfigurierten autonomen Mitarbeiter.
+Der OpenClaw-Server ist auf dem Hostinger-VPS erreichbar. Der read-only
+Hermes-zu-OpenClaw-Mitarbeiterkanal ist jetzt über einen VPS-MCP-Adapter
+konfiguriert und als Prozess unter dem Hermes-Gateway nachgewiesen. Ein
+mutierender Agentenkanal ist bewusst weiterhin nicht exponiert.
 
 ## Nachgewiesene Fakten
 
@@ -20,8 +20,32 @@ behandeln, nicht als bereits konfigurierten autonomen Mitarbeiter.
   Listener nicht sicher.
 - Die OpenClaw-CLI kann den Gateway-WebSocket erreichen, verweigert aber
   weitergehende Diagnostik ohne Geräteidentität beziehungsweise RPC-Token.
+- Mit dem serverseitig aus der OpenClaw-Secret-Quelle geladenen Token konnte
+  `gateway call health` erfolgreich über WebSocket ausgeführt werden; der
+  Tokenwert wurde nicht ausgegeben.
 - Hermes kennt im Sourcebestand OpenClaw-Migration und Dokumentation, aber
-  keine verifizierte aktive OpenClaw-Employee-Route.
+  keine eingebaute OpenClaw-Route. Dafür ist jetzt der lokale VPS-MCP-Adapter
+  `hermes-openclaw-employee` aktiv.
+
+## Aktiver read-only Employee-Adapter
+
+```text
+Hermes-Gateway (ai-admin)
+  └─ MCP stdio child: /home/ai-admin/.hermes/hermes-agent/tools/openclaw_employee_bridge.py
+       └─ authenticated WebSocket → ws://127.0.0.1:18789
+```
+
+Die erlaubten Werkzeuge sind ausschließlich `openclaw_health` und
+`openclaw_readiness`. Der Adapter gibt keine Werkzeuge zum Senden von
+Telegram-Nachrichten, Starten von OpenClaw-Agenten, Ändern von Konfigurationen
+oder Neustarten von Diensten frei. Der OpenClaw-Token wird nur im VPS-Prozess
+verwendet.
+
+Der direkte MCP-Canary (`initialize`, `tools/list`, `openclaw_readiness`) ist
+erfolgreich. Der separate interaktive Befehl `hermes mcp test` beendet sich in
+dieser VPS-Umgebung weiterhin nach rund zehn Sekunden mit `Connection closed`;
+das widerspricht nicht dem aktiven Child-Prozess unter dem laufenden Gateway,
+ist aber als eigenständiger CLI-Test kein PASS.
 
 ## Telegram-Befund
 
@@ -32,25 +56,26 @@ behandeln, nicht als bereits konfigurierten autonomen Mitarbeiter.
 - `GATEWAY_ALLOW_ALL_USERS` wurde nicht gesetzt.
 - Der aktuelle VPS-Hermes-Gateway startet aktiv. Historische Telegram-Warnungen
   aus älteren Starts sind nicht als aktueller Betriebsnachweis zu werten.
-- Der VPS-Hermes-Bot-Token ist in der aktuellen Untersuchung nicht als
-  verwendeter Secret-Wert ausgegeben oder bestätigt worden. Die sichtbaren
-  Telegram-Screenshots sind Belege für einen früheren beziehungsweise anderen
-  laufenden Hermes-Kanal, nicht automatisch für den aktuellen VPS-Prozess.
+- Der OpenClaw-Gateway meldet Telegram über seinen authentifizierten Health-Call
+  als `configured`, `running`, `connected`, `polling` und `tokenStatus=available`.
+  Die aktive Telegram-Session des Owners `8196825649` ist in der OpenClaw-
+  Sessionliste vorhanden. Das ist ein OpenClaw-Telegram-Nachweis, nicht der
+  Nachweis eines separaten Hermes-Bot-Tokens.
 
 ## Nächster sicherer Integrationsschritt
 
-1. OpenClaw-RPC- beziehungsweise Geräteidentität aus dem bestehenden Secret-
-   Consumer nachweisen, ohne den Wert offenzulegen.
-2. Eine read-only Hermes-zu-OpenClaw-Health-Canary über den privaten
-   Loopback-Pfad ausführen.
-3. Erst danach eine synthetische Agenten-Anfrage ohne externe Zustellung testen.
-4. Telegram ausschließlich als private Owner-DM mit `8196825649` prüfen.
-5. Keine Gruppen, Kundenkanäle, externen Nachrichten oder öffentlichen
+1. Eine synthetische Agenten-Anfrage ohne externe Zustellung über den
+   authentifizierten Employee-Kanal prüfen.
+2. Telegram ausschließlich als private Owner-DM mit `8196825649` prüfen.
+3. Keine Gruppen, Kundenkanäle, externen Nachrichten oder öffentlichen
    OpenClaw-Ports aktivieren.
 
 ## Nicht behaupten
 
-`OPENCLAW HEALTH = VERIFIED` ist belegt. `HERMES OPENCLAW EMPLOYEE ACCESS =
-VERIFIED` ist noch offen. `TELEGRAM E2E CURRENT VPS BOT = VERIFIED` ist noch
-offen, solange der aktuelle Hermes-Bot-Secret-Consumer und eine neue private
-Canary nicht eindeutig dem laufenden VPS-Gateway zugeordnet sind.
+`OPENCLAW HEALTH = VERIFIED` ist belegt. `HERMES OPENCLAW READ-ONLY EMPLOYEE
+ACCESS = VERIFIED` ist durch den aktiven MCP-Child-Prozess, dessen
+MCP-Handshake und den authentifizierten Health-Call belegt. Ein mutierender
+OpenClaw-Agentenkanal bleibt absichtlich nicht freigeschaltet. `TELEGRAM E2E
+OPENCLAW OWNER CHANNEL = VERIFIED`; `TELEGRAM E2E CURRENT VPS HERMES BOT =
+NOT VERIFIED`, solange kein separater aktueller Hermes-Bot-Token zugeordnet
+ist.
