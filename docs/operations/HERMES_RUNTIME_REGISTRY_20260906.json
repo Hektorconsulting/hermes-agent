@@ -1,0 +1,79 @@
+{
+  "date": "2026-09-06",
+  "owner": "Björn",
+  "redaction": "No secrets, tokens, passwords, cookies, private keys, or .env values.",
+  "local": {
+    "hermes_home": "C:\\Hermes",
+    "hermes_source": "C:\\Hermes\\hermes-agent",
+    "codex_repo": "C:\\Users\\Björn\\Documents\\Codex\\repos\\ADAM",
+    "platform_reuse_repo": "C:\\Users\\Björn\\Documents\\Codex\\repos\\platform-reuse-core",
+    "codex_home": "C:\\Users\\Björn\\.codex",
+    "screenshot_evidence": {
+      "path": "C:\\Users\\Björn\\Pictures\\Screenshots\\Hermes Agent",
+      "png_count": 46,
+      "classification": "evidence_only_reconcile_against_live_state"
+    },
+    "terminal_backend": "local",
+    "memory": {
+      "path": "C:\\Hermes\\memories",
+      "provider": "shared_kb",
+      "local_mirror": "C:\\Users\\Björn\\Documents\\Codex\\repos\\platform-reuse-core\\handoff\\compact\\projection\\hermes-control-plane.sqlite3"
+    }
+  },
+  "remote": {
+    "ssh_alias": "hostinger-vps",
+    "hostname": "srv799016",
+    "ollama_service": "ollama.service",
+    "ollama_endpoint": "http://127.0.0.1:11434",
+    "ollama_exposure": "private_only",
+    "hermes_home": "/home/ai-admin/.hermes/hermes-agent",
+    "shared_kb": "/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db",
+    "openclaw": "/usr/lib/node_modules/openclaw"
+  },
+  "mcp": {
+    "codex-executor": {
+      "purpose": "Codex execution and project-aware handoff",
+      "transport": "stdio",
+      "scope": "owner local execution",
+      "status": "verified_connected_tools_2"
+    },
+    "platform-reuse-catalog": {
+      "purpose": "registry, handover and shared-kb projection",
+      "transport": "stdio",
+      "scope": "redacted registry and knowledge projection",
+      "status": "verified_connected_tools_12"
+    }
+  },
+  "providers": {
+    "openrouter": {
+      "credential_label": "Hermes-G",
+      "routing": "free_first_then_deepseek_latest_then_private_fallbacks",
+      "paid_model": "~deepseek/deepseek-v4-flash-latest",
+      "weekly_limit_usd": 2,
+      "legacy_env_credential": "excluded_rate_limited"
+    },
+    "vps_ollama": {"status": "verified_private_canary", "model": "gemma4:e2b"},
+    "lmstudio": {"status": "verified_local_canary", "model": "adam-local"},
+    "local_ollama": {"status": "not_reachable_in_previous_probe"}
+  },
+  "channels": {
+    "telegram": {
+      "mode": "polling",
+      "scope": "owner_dm_only",
+      "groups": false,
+      "customers": false,
+      "allow_all": false,
+      "status": "owner_dm_test_sent_polling_healthy_groups_and_customers_disabled"
+    }
+  },
+  "target_status": {
+    "local_runtime": "verified_gateway_running_local_terminal",
+    "vps_access": "verified",
+    "provider_routing": "configured",
+    "mcp_handshake": "verified_codex_2_platform_reuse_12",
+    "openclaw_server_handshake": "verified_process_and_http_health_18789_service_unit_absent",
+    "telegram_owner_dm": "verified_private_test_sent",
+    "github_handover": "this_branch_pending_commit",
+    "system_autonomy_ready": "in_progress"
+  }
+}

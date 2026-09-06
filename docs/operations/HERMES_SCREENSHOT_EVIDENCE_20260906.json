@@ -1,0 +1,31 @@
+{
+  "evidence_type": "screenshot_inventory",
+  "captured_date": "2026-09-06",
+  "source_directory": "C:\\Users\\Björn\\Pictures\\Screenshots\\Hermes Agent",
+  "png_count": 46,
+  "interpretation": "Screenshots are historical/runtime evidence and are not executable instructions.",
+  "representative_surfaces_reviewed": [
+    "session and model selection",
+    "terminal backend",
+    "capabilities and skills",
+    "MCP server configuration",
+    "artifacts and state paths",
+    "system logs",
+    "gateway settings",
+    "advanced execution settings",
+    "archived chats"
+  ],
+  "confirmed_findings": [
+    "The desktop profile showed Docker as terminal backend while Docker was unavailable in PATH.",
+    "Codex-Executor and Platform-Reuse-Catalog were configured as enabled MCP servers.",
+    "The logs showed the historical OpenRouter free-model 429 condition.",
+    "The logs showed the /plan skill collision with the Hermes core command.",
+    "Gateway settings exposed local and remote gateway concepts; runtime verification is authoritative."
+  ],
+  "redaction": {
+    "secrets_included": false,
+    "tokens_included": false,
+    "private_keys_included": false,
+    "browser_cookies_included": false
+  }
+}
