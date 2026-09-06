@@ -67,6 +67,10 @@ ist aber als eigenständiger CLI-Test kein PASS.
   `hektor_hermes_agent_bot` (Hermes Agent).
 - Der lokale Windows-Hermes-Poller wurde beendet, weil derselbe Bot nicht
   gleichzeitig lokal und auf dem VPS per `getUpdates` pollen darf.
+- Der lokale Windows-Gateway läuft weiterhin für Cron, Memory und Wissens-
+  Refresh, aber ohne aktivierte Messaging-Plattformen. Damit bleiben die
+  stündlichen, täglichen und wöchentlichen Lernjobs aktiv, während der VPS
+  exklusiver Telegram-Eigentümer ist.
 - Die früheren `InvalidToken`- und Conflict-Zeilen gehören zum Start vor der
   Tokenkorrektur. Seit dem korrigierten Neustart und dem Stop des lokalen
   Pollers wurden keine neuen Telegram-Fehler oder Polling-Konflikte geloggt.
