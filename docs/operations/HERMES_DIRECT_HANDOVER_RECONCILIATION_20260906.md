@@ -54,9 +54,8 @@ large runtime transcript.
   manual process is running. Historical logs showed a binary/config version
   mismatch; the current binary reports a newer version, so a controlled
   service takeover still needs a conflict-free test.
-- The VPS Hermes shared-knowledge MCP reported an initial connection failure in
-  the Gateway log. The SQLite file itself is present and readable; MCP
-  transport readiness is therefore separate from database existence.
+- The VPS Hermes shared-knowledge MCP had been failing before this turn. The
+  failure was repaired and is now recorded separately as `REPAIRED` below.
 - VPS Platform-Reuse gateway attestation was not proven by the direct session;
   local Gateway attestation and VPS Gateway attestation must not be conflated.
 - An earlier local-model daily run failed because `qwen2.5-coder:7b` exposes a
@@ -67,20 +66,27 @@ large runtime transcript.
   empty `/api/generate` response was an endpoint/mode mismatch; `/api/chat`
   with explicit non-thinking mode is the verified canary path.
 
+### REPAIRED DURING THIS RECONCILIATION
+
+- VPS `hermes-shared-knowledge` MCP: the bridge had been unreadable by the
+  `ai-admin` service (`root:root`, mode `0700`) and used an obsolete
+  `MCPServer` import. It was backed up, migrated to the installed `FastMCP`
+  API, assigned to `ai-admin:ai-admin` with mode `0750`, and loaded by a
+  restarted Gateway. The live Gateway now has the bridge child process and
+  processed `tools/list` successfully.
+
 ## Next autonomous work queue
 
 1. Reconcile the VPS OpenClaw watchdog versus systemd ownership without
    creating a duplicate listener; only then enable a persistent service if the
    newer binary and Vault wrapper pass a dry-run.
-2. Diagnose and repair the VPS `hermes-shared-knowledge` MCP startup path,
-   preserving the existing SQLite source and redacted write-back contract.
-3. Capture a fresh Gateway-attested Platform-Reuse readback from the correct
+2. Capture a fresh Gateway-attested Platform-Reuse readback from the correct
    runtime, not an isolated CLI process.
-4. Keep the verified Ollama chat canary as the runtime probe and add it to the
+3. Keep the verified Ollama chat canary as the runtime probe and add it to the
    daily provider reconciliation without storing prompts containing secrets.
-5. Verify Telegram’s effective Owner-DM allowlist and one private inbound/outbound
+4. Verify Telegram’s effective Owner-DM allowlist and one private inbound/outbound
    test; leave groups and customer channels disabled.
-6. Reconcile VPS Git safe-directory and remote metadata without changing the
+5. Reconcile VPS Git safe-directory and remote metadata without changing the
    repository’s worktree content.
 
 All findings are redacted. No password, API key, bot token, cookie, private key
