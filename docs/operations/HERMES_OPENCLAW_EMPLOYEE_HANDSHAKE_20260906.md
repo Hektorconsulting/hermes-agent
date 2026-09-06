@@ -74,10 +74,14 @@ ist aber als eigenständiger CLI-Test kein PASS.
 - Die früheren `InvalidToken`- und Conflict-Zeilen gehören zum Start vor der
   Tokenkorrektur. Seit dem korrigierten Neustart und dem Stop des lokalen
   Pollers wurden keine neuen Telegram-Fehler oder Polling-Konflikte geloggt.
-- Eine einzelne ausgehende Owner-Canary wurde erfolgreich an Chat-ID
-  `8196825649` zugestellt (`message_id=47`). Die Nachricht fordert die
+- Eine ausgehende Owner-Canary wurde erfolgreich an Chat-ID
+  `8196825649` zugestellt (`message_id=48`). Die Nachricht fordert die
   Antwort `HERMES-INBOUND-OK` an; der eingehende Teil bleibt bis zu dieser
   echten Owner-Antwort offen.
+- Der aktuelle Hermes-Bot und der OpenClaw-Bot sind unterschiedliche
+  Telegram-Identitäten. Der aktuelle Hermes-Token wurde per `getMe` als
+  gültig bestätigt; ein Same-Bot-Konflikt zwischen diesen beiden Rollen ist
+  damit nicht belegt.
 
 ## Nächster sicherer Integrationsschritt
 
