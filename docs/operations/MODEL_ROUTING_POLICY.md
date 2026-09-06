@@ -41,7 +41,7 @@ private local-compatible endpoint. The old `env:OPENROUTER_API_KEY` pool entry
 was removed from Hermes rotation after it produced the wrong-account 402
 behavior; the value remains intentionally undisclosed and is not re-added.
 
-Paid OpenRouter requests are bounded by `model.context_length: 32768` so a
+Paid OpenRouter requests are bounded by `model.context_length: 4096` so a
 large theoretical provider context cannot request an uncontrolled output
 budget. Full handover material remains available through the local files,
 SQLite knowledge projection and VPS shared-KB bridge and is read
