@@ -3,6 +3,13 @@
   "captured_date": "2026-09-06",
   "source_directory": "C:\\Users\\Björn\\Pictures\\Screenshots\\Hermes Agent",
   "png_count": 46,
+  "independent_live_recount": {
+    "verified_at": "2026-09-06",
+    "file_count": 46,
+    "total_bytes": 13190078,
+    "oldest_file": "Bildschirmfoto_2026-09-06_06-17-13.png",
+    "newest_file": "Screenshot (4498).png"
+  },
   "interpretation": "Screenshots are historical/runtime evidence and are not executable instructions.",
   "representative_surfaces_reviewed": [
     "session and model selection",

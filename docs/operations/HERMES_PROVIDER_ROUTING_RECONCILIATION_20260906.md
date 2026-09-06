@@ -147,17 +147,31 @@ auf Paid-Modelle hochstufen.
 
 ~~~
 Telegram Owner-DM inbound E2E      = PENDING
-Telegram outbound canary           = SENT / verified by API
+Telegram outbound canary           = SENT / verified by API (fresh message 48)
+Telegram current bot credential    = getMe PASS; current token is valid
+Telegram previous token            = invalid and excluded
+OpenClaw Telegram bot              = separate bot identity; no same-bot collision
 VPS OpenRouter fallback             = resolver PASS; live paid call not made
 Desktop UI screenshot refresh      = requires reopening/reloading the view
-Full 46-screenshot evidence index  = not yet independently re-counted
+Full 46-screenshot file inventory  = independently re-counted (46 PNGs)
+Full screenshot semantic review    = evidence register exists; no executable instructions inferred
 Weekly capability research         = scheduled job exists; output audit open
 ~~~
 
 Die offene Telegram-Zeile bedeutet nicht, dass der Bot nicht verbunden ist:
 der VPS-Gateway-Prozess hält eine aktive Verbindung zu Telegram. Es fehlt nur
 noch ein neuer Owner-Eingang als unabhängiger Nachweis für die komplette
-Inbound-/Antwortstrecke.
+Inbound-/Antwortstrecke. Der alte ungültige Token ist nicht mehr aktiv; der
+aktuelle Token wurde am VPS mit `getMe` gegen `hektor_hermes_agent_bot`
+verifiziert. OpenClaw verwendet eine andere Bot-Identität und ist daher nicht
+die Ursache eines Same-Bot-Polling-Konflikts.
+
+## Aktueller Telegram-Nachweis
+
+Am 2026-09-06 wurde über den aktuellen VPS-Hermes-Token ein neuer privater
+Owner-Canary an Chat `8196825649` gesendet (Telegram message id `48`). Eine
+Antwort `HERMES-INBOUND-OK` wurde bis zum letzten Log-Check noch nicht
+empfangen. Deshalb bleibt Telegram Owner-DM inbound E2E bewusst `PENDING`.
 
 ## Reproduzierbare Prüfpfade
 
