@@ -220,7 +220,7 @@ VPS Hermes-Version                 = OUTDATED (v0.13.0; Upgrade separat stagen)
 Desktop UI screenshot refresh      = requires reopening/reloading the view
 Full 46-screenshot file inventory  = independently re-counted (46 PNGs)
 Full screenshot semantic review    = evidence register exists; no executable instructions inferred
-Weekly capability research         = scheduled job exists; output audit open
+Weekly capability research         = DEFERRED; no current runtime job is claimed
 ~~~
 
 Die offene Telegram-Zeile bedeutet nicht, dass der Bot nicht verbunden ist:
@@ -267,3 +267,46 @@ VPS shared knowledge:
 
 Secrets, Tokens, Cookies, private Schlüssel und unredigierte Logs gehören
 nicht in dieses Repository.
+
+## Erweiterte Abnahme: Provider-Routing- und VPS-Ollama-Plan
+
+Der Owner hat am 2026-09-08 bestätigt, dass der vollständige
+Provider-Routing- und VPS-Ollama-Prüfplan weiterhin zum aktuellen Ziel gehört.
+Der sichtbare Kurztext des Aufgabenziels ersetzt diese Abnahme **nicht**.  Die
+folgende Matrix ist deshalb die verbindliche, aktuelle Ergänzung und trennt
+erledigte Fakten von noch offenen Nachweisen.
+
+| Anforderung | Aktueller Status | belastbarer Befund / nächste Evidenz |
+|---|---|---|
+| OpenRouter-Root-Cause | **VERIFIED** | Ein veralteter VPS-`.env`-Override zwang den Gateway auf OpenRouter; dadurch wurde ein lokales Ollama-Modell dort angefragt. Der Override wurde gezielt entfernt, der Resolver danach im Gateway-Kontext auf `custom:vps-ollama` geprüft. |
+| Richtiges Hermes-G-Credential | **VERIFIED** | Der aktive Credential-Pool löst einen separaten manuellen Hermes-G-Eintrag auf. Werte, Identifikatoren und Accountdaten sind nicht in Reports abgelegt. |
+| Quota vs. Modell/Policy/Retry | **VERIFIED** | Die beobachteten Free-Fehler waren nicht pauschal eine leere Quota: aktuelle Free-Endpunkte wurden von Privacy-/Guardrail-Policies oder Modellstatus ausgeschlossen; der alte Pfad wiederholte Provider-Aufrufe. |
+| Retry-/Parallelitätssturm | **PARTIAL** | `api_max_retries=1` und Gateway-Parallelität wurden reduziert. Noch fehlt ein kontrollierter Mehrfachlast-Test mit Messwerten. |
+| Keine OpenRouter-only-Schleife | **PARTIAL** | VPS-Ollama ist als unabhängiger Primärpfad aktiv. Die verbleibenden Free-Fallbacks sind aktuell wegen Account-Policy blockiert und müssen nach dem v0.21-Canary entweder kompatibel geprüft oder temporär sauber geparkt werden. |
+| VPS-Ollama technisch | **VERIFIED** | `gemma4:e2b` antwortet über die private Loopback-Route; keine öffentliche Exponierung wurde eingerichtet. |
+| VPS-Ollama Benchmark | **PARTIAL** | Transport und Kurz-Canary sind bewiesen. Reproduzierbare Tool-Use-, Kontext-, Durchsatz- und Langlaufwerte fehlen. |
+| LM Studio Benchmark | **PENDING** | Lokaler unabhängiger Endpoint und identisches Benchmark-Protokoll müssen frisch geprüft werden. |
+| Paid DeepSeek Latest Fallback | **PENDING** | Alias und Key-Limit sind konfiguriert; eine kostenbewusste Live-Canary mit eindeutiger Privacy-/Budgetklassifikation wurde noch nicht ausgeführt. |
+| Auxiliary-/Subagent-Routing | **PARTIAL** | Hauptgateway ist repariert. Für Vision, Compression, Titel, Triage, Delegation, Cron und Messaging fehlt noch eine vollständige effektive Provider-Matrix. |
+| Neue Session nach Routingwechsel | **PARTIAL** | Der Gateway-Resolver nach Neustart beweist den effektiven Primärpfad. Eine vollständige neue Agenten-Session mit Tool-Use/Fallback ist wegen der alten VPS-Version noch nicht PASS. |
+| Deutschsprachige Erklärung durch Hermes | **PARTIAL** | Das Handover schreibt Deutsch und die Erstkontakt-Struktur vor; der erneute E2E-Nachweis gehört zur v0.21-Canary. |
+
+### Verbindliche Reihenfolge nach Abschluss der Messung
+
+Die endgültige Reihenfolge wird nicht aus Modellgröße abgeleitet. Sie wird nur
+nach einem identischen Benchmark festgelegt: Tool-Use-Korrektheit,
+Deutschqualität, Handover-Kontexttreue, Selbstkorrektur, TTFT, Durchsatz,
+Langlaufstabilität, Ressourcen, Datenschutz, Kosten und Fehlerverhalten.
+
+1. Bester verifizierter Agenten-Primärprovider.
+2. VPS-Ollama, falls die Messung ihn als belastbar bestätigt.
+3. Unabhängiger autorisierter Provider (etwa Codex OAuth), falls technisch
+   für Hermes verfügbar und getestet.
+4. Lokales LM Studio.
+5. Lokales Ollama.
+6. OpenRouter als quota-/policy-erkennender, separat klassifizierter Pfad.
+
+Ein 429/403/404/5xx darf nicht mehr zu einem unkontrollierten Wechsel zwischen
+Free-Modellen derselben Provider- oder Policy-Grenze führen. Die Session muss
+den Fehlertyp, unabhängigen Fallback und nächsten zulässigen Recheck auf
+Deutsch erklären können.
