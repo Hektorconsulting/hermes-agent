@@ -2,6 +2,12 @@
 
 Status: completed direct Hermes session, redacted evidence — 2026-09-06
 
+> Historical snapshot. Provider, job and gateway assertions here are
+> superseded where they conflict with the current, timestamped records
+> `HERMES_PROVIDER_ROUTING_RECONCILIATION_20260906.md`,
+> `HERMES_RUNTIME_LEARNING_REFRESH_20260908.md` and
+> `HERMES_VPS_INTEGRATION_HANDSHAKE_20260908.md`.
+
 ## Direct communication result
 
 Hermes Agent was started from the owner-control workspace with the handover

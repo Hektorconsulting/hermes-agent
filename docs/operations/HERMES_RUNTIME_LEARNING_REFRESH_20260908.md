@@ -56,6 +56,13 @@ claim that a language model has fully understood every source on each run.
    value; then create a recommendation.  Discovery is not permission to
    install or enable a new integration.
 
+The historical local job `Hermes tägliche Voll-Reconciliation` was paused on
+2026-09-08 after a reproducible context-compression failure and a stale
+32K-model assumption. The pause is reversible and prevents a failed or
+misrouted model run from consuming quota. It does not stop the active hourly
+metadata refresh. A separately configured weekly capability job remains a
+recommendation-only surface until its current output is reviewed.
+
 ## Hermes handover contract
 
 The current source set contains the owner profile, source manifest, runtime

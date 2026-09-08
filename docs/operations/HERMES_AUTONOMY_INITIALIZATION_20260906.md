@@ -6,6 +6,24 @@ This record is the implementation companion to the owner handover. It covers
 local Windows, VPS, Codex, n8n, OpenClaw, OpenRouter, Telegram, MCP, skills,
 memory and GitHub persistence. It does not contain secrets.
 
+## Verbindliche Zielerweiterung — 2026-09-08
+
+Der vollständige Owner-Plan **„Hermes Provider-Routing- und
+OpenRouter-Reparatur mit VPS-Ollama-Prüfung“** ist verbindlicher Bestandteil
+dieser Initialisierung. Ein späterer Kurztext zur Autonomie oder
+Orchestrierung ersetzt ihn nicht. Die maßgebliche Abnahme- und
+Statusmatrix steht in
+`HERMES_PROVIDER_ROUTING_RECONCILIATION_20260906.md`.
+
+Sie verlangt insbesondere: getrennte Root-Cause-Klassifikation für
+OpenRouter, unabhängige Provider-Fallbacks, private VPS-Ollama- und
+LM-Studio-Benchmarks, begrenzte Paid-Tests, Auxiliary-/Subagent-Routing,
+neue Sessions nach Routingwechsel und eine deutsche, belegbare
+Statusauskunft durch Hermes. Vollständige Autonomie bedeutet dabei
+kontinuierliche, redigierte Inventur und Verbesserung innerhalb der
+verifizierten lokalen und VPS-Arbeitsbereiche — nicht das Erfinden von
+Integrationen oder das Kopieren von Secrets in den Wissensspeicher.
+
 ## Screenshot reconciliation
 
 The evidence folder contains 46 screenshots. The reviewed evidence confirms:

@@ -208,6 +208,37 @@ OpenRouter-Key-API weist hier ein Key-Limit aus, keine separat verifizierte
 Wochenabrechnung. Hermes darf daher bei unbekanntem Budget nicht eigenständig
 auf Paid-Modelle hochstufen.
 
+## Nachtrag 2026-09-08 — Windows-VPS-Ollama-Tunnel wiederhergestellt
+
+Eine aktuelle Probe hatte den lokalen Bridge-Port `127.0.0.1:11435` als nicht
+erreichbar klassifiziert. Die Ursache lag lokal: Der geplante Task
+`Hermes-VPS-Ollama-Tunnel` hatte nach einem SSH-Netzwerk-Reset beendet und
+wurde durch seinen Logon-Trigger nicht neu gestartet.
+
+`C:\Hermes\ops\Start-HermesVpsOllamaTunnel.ps1` wurde reversibel erweitert.
+Es hält SSH weiterhin an den Task gebunden, versucht nach Abbruch aber mit
+begrenzt exponentiellem Backoff erneut die private Weiterleitung. Besitzt ein
+anderer vertrauenswürdiger Recovery-Pfad den Listener bereits, endet es
+konfliktfrei.
+
+Nach Start genau dieses vorhandenen Tasks sind Task und Port wieder aktiv; der
+Katalog über Port 11435 enthält drei Modellkennungen. Ein nativer Ollama-
+`/api/chat`-Canary mit `think=false` antwortete für `gemma4:e2b` in 1.146 ms.
+Der erste OpenAI-kompatible Kurztest an `/v1/chat/completions` endete leer mit
+`finish_reason=length`. Das war ein Thinking-/Output-Mapping-Befund, kein
+Transportfehler. Nach der expliziten Zuordnung
+`extra_body.reasoning_effort: none` antwortete derselbe OpenAI-kompatible Pfad
+mit `finish_reason=stop` und Textinhalt. Der gespeicherte lokale Provider
+`custom:vps-ollama-local` verwendet genau diese redigierte Zusatzoption.
+
+Eine danach neu gestartete Hermes-Session nutzte `custom / gemma4:e2b`,
+führte einen API-Aufruf aus und beendete ihn mit `stop`. Sie lieferte den
+geforderten E2E-Marker (ohne den bedeutungslosen angeforderten Schlusspunkt).
+Damit gilt: **native Tunnel-Chat PASS**, **OpenAI-kompatibler Transport PASS**
+und **Hermes-Chat-E2E PASS**. Strikte Zeichengenauigkeit eines Ein-Zeichen-
+Markers ist kein Ersatz für den noch ausstehenden Tool-Use- und
+Langlaufbenchmark.
+
 ## Noch offen
 
 ~~~
@@ -220,7 +251,7 @@ VPS Hermes-Version                 = OUTDATED (v0.13.0; Upgrade separat stagen)
 Desktop UI screenshot refresh      = requires reopening/reloading the view
 Full 46-screenshot file inventory  = independently re-counted (46 PNGs)
 Full screenshot semantic review    = evidence register exists; no executable instructions inferred
-Weekly capability research         = DEFERRED; no current runtime job is claimed
+Weekly capability research         = CONFIGURED (eigener Wochenjob aktiv; frischer Qualitätsnachweis steht aus)
 ~~~
 
 Die offene Telegram-Zeile bedeutet nicht, dass der Bot nicht verbunden ist:
@@ -288,7 +319,7 @@ erledigte Fakten von noch offenen Nachweisen.
 | LM Studio Benchmark | **PENDING** | Lokaler unabhängiger Endpoint und identisches Benchmark-Protokoll müssen frisch geprüft werden. |
 | Paid DeepSeek Latest Fallback | **PENDING** | Alias und Key-Limit sind konfiguriert; eine kostenbewusste Live-Canary mit eindeutiger Privacy-/Budgetklassifikation wurde noch nicht ausgeführt. |
 | Auxiliary-/Subagent-Routing | **PARTIAL** | Hauptgateway ist repariert. Für Vision, Compression, Titel, Triage, Delegation, Cron und Messaging fehlt noch eine vollständige effektive Provider-Matrix. |
-| Neue Session nach Routingwechsel | **PARTIAL** | Der Gateway-Resolver nach Neustart beweist den effektiven Primärpfad. Eine vollständige neue Agenten-Session mit Tool-Use/Fallback ist wegen der alten VPS-Version noch nicht PASS. |
+| Neue Session nach Routingwechsel | **PARTIAL** | Neue lokale Hermes-Session über `custom / gemma4:e2b` lieferte einen Antwort-Canary mit `finish_reason=stop`. MCP-Tool-Use und ein echter Fallbackwechsel in dieser neuen Session fehlen noch. |
 | Deutschsprachige Erklärung durch Hermes | **PARTIAL** | Das Handover schreibt Deutsch und die Erstkontakt-Struktur vor; der erneute E2E-Nachweis gehört zur v0.21-Canary. |
 
 ### Verbindliche Reihenfolge nach Abschluss der Messung
