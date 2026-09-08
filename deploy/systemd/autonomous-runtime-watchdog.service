@@ -1,0 +1,14 @@
+[Unit]
+Description=Hermes autonomous runtime watchdog
+After=network-online.target hermes-gateway.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/python3 /home/ai-admin/.hermes/hermes-agent/tools/runtime_watchdog.py
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=read-only
+ReadWritePaths=/home/ai-admin/.hermes/state
+TimeoutStartSec=60

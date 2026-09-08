@@ -1,0 +1,12 @@
+[Unit]
+Description=Schedule Hermes autonomous runtime watchdog
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30s
+Persistent=true
+Unit=autonomous-runtime-watchdog.service
+
+[Install]
+WantedBy=timers.target
