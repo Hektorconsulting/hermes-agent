@@ -86,15 +86,19 @@ class OpenClawExecutor:
         finally:
             if temp_path is not None:
                 temp_path.unlink(missing_ok=True)
-        if result.returncode != 0:
-            raise RuntimeError(f"OpenClaw executor failed with exit code {result.returncode}")
         try:
             payload = json.loads(result.stdout)
         except json.JSONDecodeError as exc:
-            raise RuntimeError("OpenClaw executor returned non-JSON output") from exc
+            raise RuntimeError(f"OpenClaw executor returned non-JSON output (exit {result.returncode})") from exc
         if not isinstance(payload, Mapping) or payload.get("error"):
             raise RuntimeError("OpenClaw executor returned an execution error")
         summary = _result_summary(payload)
+        if result.returncode != 0 or summary["status"].lower() in {"timeout", "failed", "error"}:
+            self.ledger.transition_run(
+                run_id, "repairing", actor="openclaw",
+                payload={"executor": "openclaw", "reason": "provider_execution_incomplete", **summary},
+            )
+            raise RuntimeError(f"OpenClaw executor incomplete: {summary['status'] or 'exit ' + str(result.returncode)}")
         self.ledger.transition_run(run_id, "verifying", actor="openclaw", payload={"executor": "openclaw", **summary})
         self.ledger.transition_run(run_id, "succeeded", actor="openclaw", verification={"executor": "openclaw", **summary})
         return summary
