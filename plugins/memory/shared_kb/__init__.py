@@ -9,7 +9,8 @@ import subprocess
 from typing import Any, Dict, List
 
 from agent.memory_provider import MemoryProvider
-from tools.shared_knowledge.bridge import KnowledgeBridge
+from tools.execution_ledger import ExecutionLedger
+from tools.shared_knowledge.bridge import KnowledgeBridge, redact
 from tools.task_envelope import TaskEnvelope
 
 
@@ -75,6 +76,7 @@ class SharedKnowledgeProvider(MemoryProvider):
         self.platform = ""
         self.context: Dict[str, Any] = {}
         self.remote_bridge: _RemoteKnowledgeBridge | None = None
+        self.ledger: ExecutionLedger | None = None
 
     @property
     def name(self) -> str:
@@ -98,6 +100,14 @@ class SharedKnowledgeProvider(MemoryProvider):
         if not path and isinstance(provider_config, dict):
             path = provider_config.get("db_path")
         self.bridge = KnowledgeBridge(path)
+        ledger_path = self.config.get("execution_ledger_path") or os.environ.get("HERMES_EXECUTION_LEDGER")
+        try:
+            self.ledger = ExecutionLedger(ledger_path or None)
+        except (OSError, ValueError):
+            # Knowledge recall remains available when a local executor has no
+            # mounted ledger.  The tool returns explicit evidence instead of
+            # guessing at task state.
+            self.ledger = None
         remote_config = provider_config if isinstance(provider_config, dict) else {}
         remote = _RemoteKnowledgeBridge(remote_config)
         self.remote_bridge = remote if remote.enabled else None
@@ -219,18 +229,60 @@ class SharedKnowledgeProvider(MemoryProvider):
         return [
             {"name": "shared_knowledge_preflight", "description": "Query canonical scoped Hermes/OpenClaw knowledge before operational work.", "parameters": {"type": "object", "properties": {"objective": {"type": "string"}, "privacy_scope": {"type": "string"}}, "required": ["objective"]}},
             {"name": "shared_knowledge_writeback", "description": "Write a redacted requirement/result to the canonical knowledge database.", "parameters": {"type": "object", "properties": {"objective": {"type": "string"}, "summary": {"type": "string"}, "status": {"type": "string"}}, "required": ["objective", "summary"]}},
+            {"name": "execution_ledger_read_handover", "description": "Read one persistent, redacted system handover and its checksum from the execution ledger.", "parameters": {"type": "object", "properties": {"block_id": {"type": "string"}}, "required": ["block_id"]}},
+            {"name": "execution_ledger_read_run", "description": "Read one persistent, redacted execution run including its event trail from the execution ledger.", "parameters": {"type": "object", "properties": {"run_id": {"type": "string"}}, "required": ["run_id"]}},
+            {"name": "execution_ledger_verify_handover", "description": "Checksum-verify one persistent system handover as the Hermes runtime.", "parameters": {"type": "object", "properties": {"block_id": {"type": "string"}, "checksum": {"type": "string"}}, "required": ["block_id", "checksum"]}},
         ]
 
     def handle_tool_call(self, tool_name: str, args: Dict[str, Any], **kwargs) -> str:
-        if not self.bridge:
-            return json.dumps({"status": "FAIL", "error": "provider_not_initialized"})
         if tool_name == "shared_knowledge_preflight":
+            if not self.bridge:
+                return json.dumps({"status": "FAIL", "error": "provider_not_initialized"})
             request = {"task_id": self.session_id, "session_id": self.session_id, "channel": self.platform, "agent_id": "hermes", "objective": args.get("objective", ""), "requested_scope": args.get("objective", ""), "privacy_scope": args.get("privacy_scope", "system")}
             result = self.remote_bridge.call("preflight", request, task_id=self.session_id) if self.remote_bridge else None
             return json.dumps(result or self.bridge.preflight(request), ensure_ascii=False)
         if tool_name == "shared_knowledge_writeback":
+            if not self.bridge:
+                return json.dumps({"status": "FAIL", "error": "provider_not_initialized"})
             payload = {"task_id": self.session_id, "session_id": self.session_id, "channel": self.platform, "agent_id": "hermes", "privacy_scope": "system", "objective": args.get("objective", ""), "requirement": {"objective": args.get("objective", ""), "status": args.get("status", "draft")}, "result": {"summary": args.get("summary", ""), "status": args.get("status", "draft")}}
             return json.dumps(self._writeback(payload), ensure_ascii=False)
+        if tool_name == "execution_ledger_read_handover":
+            if not self.ledger:
+                return json.dumps({"status": "FAIL", "error": "execution_ledger_unavailable"})
+            try:
+                block_id = str(args.get("block_id") or "").strip()
+                with self.ledger._connect() as connection:
+                    row = connection.execute("SELECT block_id,payload_json,checksum,persisted_at,verified_by,verified_at FROM handovers WHERE block_id=?", (block_id,)).fetchone()
+                if not row:
+                    return json.dumps({"status": "FAIL", "error": "handover_not_found", "block_id": block_id})
+                item = dict(row)
+                item["payload"] = json.loads(item.pop("payload_json"))
+                return json.dumps(redact({"status": "PASS", "handover": item}), ensure_ascii=False)
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                return json.dumps({"status": "FAIL", "error": "handover_read_failed", "detail": type(exc).__name__})
+        if tool_name == "execution_ledger_read_run":
+            if not self.ledger:
+                return json.dumps({"status": "FAIL", "error": "execution_ledger_unavailable"})
+            try:
+                return json.dumps(redact({"status": "PASS", "run": self.ledger.read_run(str(args.get("run_id") or "").strip())}), ensure_ascii=False)
+            except KeyError:
+                return json.dumps({"status": "FAIL", "error": "run_not_found"})
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                return json.dumps({"status": "FAIL", "error": "run_read_failed", "detail": type(exc).__name__})
+        if tool_name == "execution_ledger_verify_handover":
+            if not self.ledger:
+                return json.dumps({"status": "FAIL", "error": "execution_ledger_unavailable"})
+            try:
+                result = self.ledger.verify_handover(
+                    str(args.get("block_id") or "").strip(),
+                    str(args.get("checksum") or "").strip(),
+                    verifier="hermes-runtime",
+                )
+                return json.dumps(redact({"status": "PASS" if result["matched"] else "FAIL", "verification": result}), ensure_ascii=False)
+            except KeyError:
+                return json.dumps({"status": "FAIL", "error": "handover_not_found"})
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                return json.dumps({"status": "FAIL", "error": "handover_verify_failed", "detail": type(exc).__name__})
         return json.dumps({"status": "FAIL", "error": "unknown_tool"})
 
     def _writeback(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -246,6 +298,7 @@ class SharedKnowledgeProvider(MemoryProvider):
     def shutdown(self) -> None:
         self.bridge = None
         self.remote_bridge = None
+        self.ledger = None
 
 
 def register(ctx) -> None:
