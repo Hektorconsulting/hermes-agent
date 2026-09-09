@@ -67,7 +67,11 @@ def recall_handover(block_id: str, run_id: str) -> dict[str, Any]:
             "codex_role": roles.get("codex", "UNVERIFIED"),
             "hermes_role": roles.get("hermes", "UNVERIFIED"),
             "ledger_path": str(provider.ledger.path) if provider.ledger else "UNVERIFIED",
-            "shared_kb_role": (payload.get("sources_of_truth") or {}).get("shared_kb", "UNVERIFIED"),
+            "shared_kb_role": (
+                (payload.get("sources_of_truth") or {}).get("shared_kb")
+                or (payload.get("sources_of_truth") or {}).get("knowledge")
+                or "UNVERIFIED"
+            ),
             "services": runtime.get("services", runtime),
             "openclaw": runtime.get("openclaw", "UNVERIFIED"),
             "a2a": runtime.get("a2a", "UNVERIFIED"),
