@@ -168,7 +168,10 @@ class KnowledgeBridge:
             sources = c.execute("SELECT source_id,path,system,namespace,status,sha256 FROM knowledge_sources WHERE namespace IN (?, 'global') ORDER BY modified_utc DESC LIMIT 40", (request.get("privacy_scope", "system"),)).fetchall()
             gaps = []
             if terms and "chunks_fts" in {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}:
-                match = " OR ".join(terms)
+                # FTS5 interprets unquoted hyphens as query syntax.  Task and
+                # run identifiers legitimately contain hyphens, so quote each
+                # independently extracted term before composing the query.
+                match = " OR ".join(f'"{term}"' for term in terms)
                 gaps = c.execute("SELECT corpus_path, snippet(chunks_fts, 0, '[', ']', '…', 16) FROM chunks_fts WHERE chunks_fts MATCH ? LIMIT 12", (match,)).fetchall()
         return {"status": "PASS", "task_id": envelope.task_id, "session_id": envelope.session_id,
                 "run_id": envelope.run_id, "task_envelope": envelope.to_dict(),
