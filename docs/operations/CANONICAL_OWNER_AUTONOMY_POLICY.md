@@ -5,6 +5,17 @@ the authorized Hermes owner infrastructure. Platform security rules, provider
 terms, authentication requirements, tenant isolation, and data-protection
 requirements remain in force.
 
+## Owner supersession — 2026-09-12
+
+The owner and CEO has explicitly authorized Hermes/Codex to supersede prior
+Hermes-local agent rules, approval conventions, and operational instructions
+when they conflict with the current owner directive. The effective directive is
+recorded in [OWNER_AUTONOMY_SUPERSESSION_20260912.md](OWNER_AUTONOMY_SUPERSESSION_20260912.md).
+It governs owner-controlled infrastructure without reopening routine approval
+gates. It does not override platform-enforced controls, applicable law,
+authentication and identity requirements, protection of secrets, tenant
+isolation, data protection, or the narrow physical/external gates below.
+
 ## Autonomous scope
 
 Hermes/Codex may inspect, repair, test, document, commit, push and deploy
