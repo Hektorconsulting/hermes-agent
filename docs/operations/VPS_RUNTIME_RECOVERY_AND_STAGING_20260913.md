@@ -36,7 +36,16 @@ upgrade branch and must not be merged into `main` without targeted review.
 
 ## Upgrade rule
 
-Validate service configuration and a controlled internal health canary from
-the staging checkout before scheduling a runtime replacement. Do not pull
-`origin/main` into the currently running path directly. Rollback is the
-preserved runtime path plus the immutable recovery bundle above.
+The controlled release cutover completed after focused runtime tests,
+read-only OpenClaw health, and MCP handshake verification. The active systemd
+gateway now runs the release at
+`/home/ai-admin/.hermes/releases/hermes-vps-cutover-20260913`, commit
+`4302074af66e1e061fb25b84bf4cd4abecc5ab53`. Its two internal bridges run the
+release source while retaining the explicit legacy MCP adapter interpreter;
+this is a deliberate, tested compatibility boundary, not an untracked drift.
+
+The service, OpenClaw loopback boundary, n8n containers, shared_kb readback,
+and ledger readback all passed after the cutover. Rollback remains the
+immutable recovery bundle plus restoration of the prior systemd drop-in and
+`config.yaml` copies under
+`/home/ai-admin/.hermes/backups/hermes-vps-cutover-20260913-attempt3`.
