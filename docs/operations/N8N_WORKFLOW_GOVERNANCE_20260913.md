@@ -105,3 +105,19 @@ Ausführungen in n8n/runners/queue ermitteln, die korrekte Finalisierung
 nachweisen und anschließend einen redigierten DLQ-Record mit Readback testen.
 Bis dahin bleiben alle LEGACY_REVIEW-Flows unverändert, aktiv aber nicht Teil
 der produktiven Hermes-Allowlist.
+
+## Retest: Execution-Finalisierung 2026-09-13
+
+Der obige Befund ist historischer Canary-Kontext und kein aktueller
+Runtime-Status mehr. Eine frische, metadata-only n8n-Abfrage (ohne
+Ausführungsdaten oder Header) ergab für `st2p1ATO2GAGkkn4` und
+`ADAMLiveDLQv1` jeweils **0** Executions mit Status `running` oder `waiting`.
+Die früher referenzierten IDs sind nicht mehr abrufbar. Die noch am selben Tag
+sichtbaren Event-Intake-Canaries `531` und `533` sind sauber als `error` mit
+`stoppedAt` finalisiert; sie waren kontrollierte Negativtests und erzeugten
+keine Außenwirkung.
+
+**Aktueller Status:** PASS für Execution-Finalisierung und fehlende hängende
+Runs. Der nächste Auftrag aus dem vorigen Abschnitt ist damit geschlossen.
+Eine erneute DLQ-Fehler-Injektion ist nicht erforderlich, solange weder der
+kanonische Flow noch n8n-Runtime/Queue-Konfiguration relevant verändert wird.

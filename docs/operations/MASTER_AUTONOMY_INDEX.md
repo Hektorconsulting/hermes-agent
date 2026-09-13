@@ -71,7 +71,7 @@ navigation, not a claim that every discovered source is current.
 | Google Drive | PASS | OAuth session plus live profile/list/read/search verification completed; curated technical sources are indexed in the native Google Drive master index. |
 | n8n Contract Memory | CURRENT | Machine-readable endpoint, schema, HMAC-reference, UUID/idempotency and canonical-route registry. Contract facts are reused without re-discovery absent a relevant mutation. | `docs/operations/N8N_CONTRACT_REGISTRY.json` |
 | ChatGPT Projects API | NOT_AVAILABLE | Use this index and shared_kb as the transition layer. |
-| n8n governance / allowlist | PARTIAL | Björn owns all 36 flows; a verified 9-flow canonical ADAM route is documented. HMAC and idempotent receipt canaries pass, but n8n/DLQ execution finalization remains `running` and requires recovery repair. | `docs/operations/N8N_WORKFLOW_GOVERNANCE_20260913.md` |
+| n8n governance / allowlist | PASS (retested) | Björn owns all 36 flows; a verified 9-flow canonical ADAM route is documented. HMAC and idempotent receipt canaries pass. Fresh metadata-only readback found no running or waiting executions in the Event-Intake or DLQ flows; earlier execution IDs have been finalized/retained away. | `docs/operations/N8N_WORKFLOW_GOVERNANCE_20260913.md` |
 
 ## OPEN_GATES
 
