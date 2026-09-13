@@ -1,0 +1,42 @@
+flowchart TB
+  HERMES_DESKTOP["HERMES_DESKTOP<br/>sole dispatcher"]
+  MCP_KB["MCP_SHARED_KB<br/>stdio / release subprocess"]
+  MCP_OC["MCP_OPENCLAW_BRIDGE<br/>stdio / bounded read-only"]
+  MCP_REUSE["MCP_PLATFORM_REUSE<br/>legacy adapter / catalog"]
+  N8N_MCP["N8N_MCP<br/>OAuth-authenticated discovery"]
+  N8N_CANONICAL["N8N_CANONICAL_ROUTE<br/>HMAC + event ID + idempotency"]
+  OPENCLAW["OPENCLAW_EDGE<br/>127.0.0.1 and ::1 :18789"]
+  GOWA["GOWA_WHATSAPP_EDGE<br/>internal health verified"]
+  TELEGRAM["TELEGRAM_EDGE<br/>configured; live owner E2E not run"]
+  VOICE["VOICE_EDGE<br/>runtime present; physical E2E gate"]
+  DRIVE["GOOGLE_DRIVE<br/>OAuth read/write verified"]
+  GITHUB["GITHUB<br/>Git push verified"]
+  PROVIDER["MODEL_PROVIDERS<br/>configured + fallback canary"]
+  A2A["A2A_PROTOCOL<br/>NOT_APPLICABLE_CURRENTLY<br/>no current independent AgentCard boundary"]
+  PROJECTS["CHATGPT_PROJECTS_API<br/>NOT_AVAILABLE"]
+  HUMAN["HUMAN_GATES<br/>OAuth re-consent / QR / 2FA / physical E2E"]
+
+  HERMES_DESKTOP -->|EDGE-201 MCP stdio; authenticated| MCP_KB
+  HERMES_DESKTOP -->|EDGE-202 MCP stdio; read-only allowlist| MCP_OC
+  HERMES_DESKTOP -->|EDGE-203 legacy MCP stdio; catalog only| MCP_REUSE
+  HERMES_DESKTOP -->|EDGE-204 remote MCP; OAuth session| N8N_MCP
+  N8N_MCP -->|EDGE-205 canonical allowlist| N8N_CANONICAL
+  N8N_CANONICAL -->|EDGE-206 HMAC protected internal route| GOWA
+  OPENCLAW -->|EDGE-207 device/communication adapter| TELEGRAM
+  OPENCLAW -->|EDGE-208 device/communication adapter| GOWA
+  OPENCLAW -->|EDGE-209 voice adapter| VOICE
+  HERMES_DESKTOP -->|EDGE-210 governed master-index write| DRIVE
+  HERMES_DESKTOP -->|EDGE-211 commit/push| GITHUB
+  HERMES_DESKTOP -->|EDGE-212 provider request; no credentials in map| PROVIDER
+  HERMES_DESKTOP -.->|EDGE-213 not installed; evaluate only when independent agent boundary exists| A2A
+  HERMES_DESKTOP -.->|EDGE-214 documented transition layer| PROJECTS
+  TELEGRAM -->|EDGE-215 owner action required| HUMAN
+  GOWA -->|EDGE-216 QR/device pairing required| HUMAN
+  VOICE -->|EDGE-217 microphone/speaker E2E required| HUMAN
+
+  classDef authority fill:#0b5,stroke:#063,color:#fff;
+  classDef verified fill:#2463eb,stroke:#163c91,color:#fff;
+  classDef limit fill:#f59e0b,stroke:#92400e,color:#111;
+  class HERMES_DESKTOP authority;
+  class MCP_KB,MCP_OC,MCP_REUSE,N8N_MCP,N8N_CANONICAL,OPENCLAW,DRIVE,GITHUB,PROVIDER verified;
+  class A2A,PROJECTS,HUMAN,TELEGRAM,VOICE limit;

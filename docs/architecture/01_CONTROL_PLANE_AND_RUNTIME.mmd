@@ -1,0 +1,46 @@
+flowchart TB
+  %% Evidence snapshot: 2026-09-13. Node/edge IDs are registry IDs.
+  subgraph DESKTOP["Desktop — leading control plane"]
+    HERMES_DESKTOP["HERMES_DESKTOP<br/>Hermes Desktop / sole Chief"]
+    CODEX_EXECUTOR["CODEX_EXECUTOR<br/>technical executor"]
+    LOCAL_LEDGER["LOCAL_LEDGER<br/>mirror / fallback"]
+  end
+  subgraph VPS["Hostinger VPS — runtime, knowledge, recovery, gateway"]
+    SYSTEMD_HERMES["SYSTEMD_HERMES<br/>hermes-gateway.service<br/>User ai-admin"]
+    HERMES_RUNTIME["HERMES_VPS_RUNTIME<br/>versioned release"]
+    SYSTEMD_OPENCLAW["SYSTEMD_OPENCLAW<br/>openclaw-gateway.service<br/>User ai-admin"]
+    OPENCLAW_EDGE["OPENCLAW_EDGE<br/>loopback :18789"]
+    BRIDGE_KB["BRIDGE_SHARED_KB<br/>release subprocess"]
+    BRIDGE_OC["BRIDGE_OPENCLAW<br/>release subprocess"]
+    N8N["N8N_RUNTIME<br/>Docker / loopback :5678"]
+    N8N_RUNNERS["N8N_RUNNERS<br/>Docker worker"]
+    GOWA["GOWA_EDGE<br/>Docker / loopback :18082"]
+    SPEACHES["SPEACHES_RUNTIME<br/>Docker internal"]
+    OLLAMA["OLLAMA_FALLBACK<br/>loopback :11434"]
+  end
+  PROVIDERS["EXTERNAL_PROVIDERS<br/>configured; no secrets"]
+  OWNER_GATE["OWNER_GATE_DEVICE_OR_OAUTH<br/>QR / OAuth / physical E2E"]
+
+  HERMES_DESKTOP -->|EDGE-001 TaskEnvelope; internal| CODEX_EXECUTOR
+  HERMES_DESKTOP -->|EDGE-002 preflight/writeback; authenticated bridge| BRIDGE_KB
+  HERMES_DESKTOP -->|EDGE-003 bounded read-only MCP stdio| BRIDGE_OC
+  CODEX_EXECUTOR -->|EDGE-004 versioned runtime command| SYSTEMD_HERMES
+  SYSTEMD_HERMES -->|EDGE-005 starts| HERMES_RUNTIME
+  HERMES_RUNTIME -->|EDGE-006 owns subprocess| BRIDGE_KB
+  HERMES_RUNTIME -->|EDGE-007 owns subprocess| BRIDGE_OC
+  SYSTEMD_OPENCLAW -->|EDGE-008 starts| OPENCLAW_EDGE
+  HERMES_RUNTIME -->|EDGE-009 controlled runtime call| N8N
+  N8N -->|EDGE-010 queue execution| N8N_RUNNERS
+  N8N -->|EDGE-011 internal integration| GOWA
+  N8N -->|EDGE-012 internal media path| SPEACHES
+  HERMES_RUNTIME -->|EDGE-013 provider routing / fallback| PROVIDERS
+  HERMES_RUNTIME -->|EDGE-014 local fallback| OLLAMA
+  OPENCLAW_EDGE -->|EDGE-015 device edge; external disabled pending gate| OWNER_GATE
+  HERMES_DESKTOP -.->|EDGE-016 local fallback only| LOCAL_LEDGER
+
+  classDef authority fill:#0b5,stroke:#063,color:#fff;
+  classDef runtime fill:#2463eb,stroke:#163c91,color:#fff;
+  classDef boundary fill:#f59e0b,stroke:#92400e,color:#111;
+  class HERMES_DESKTOP authority;
+  class SYSTEMD_HERMES,HERMES_RUNTIME,SYSTEMD_OPENCLAW,OPENCLAW_EDGE,N8N,N8N_RUNNERS,GOWA,SPEACHES,OLLAMA runtime;
+  class OWNER_GATE,PROVIDERS boundary;

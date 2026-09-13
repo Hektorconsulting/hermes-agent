@@ -74,6 +74,7 @@ navigation, not a claim that every discovered source is current.
 | ChatGPT Projects API | NOT_AVAILABLE | Use this index and shared_kb as the transition layer. |
 | n8n governance / allowlist | PASS (retested) | Björn owns all 36 flows; a verified 9-flow canonical ADAM route is documented. HMAC and idempotent receipt canaries pass. Fresh metadata-only readback found no running or waiting executions in the Event-Intake or DLQ flows; earlier execution IDs have been finalized/retained away. | `docs/operations/N8N_WORKFLOW_GOVERNANCE_20260913.md` |
 | Hermes runtime compatibility | PASS | MCP2 bridge handshake, shared_kb synthetic write/read-back, authenticated read-only OpenClaw health, and read-only integrity checks for the four Hermes SQLite databases passed. | `docs/operations/HERMES_RUNTIME_COMPATIBILITY_CLOSURE_20260913.md` |
+| Architecture handover map | CURRENT / VERIFIED | Three versioned Mermaid maps, a machine-readable component/edge registry, glossary and evidence matrix now describe the actual Desktop/VPS runtime, data/recovery and integration boundaries. A manually started root SSH OpenClaw bridge found during mapping was stopped only after the canonical `ai-admin` release bridge was verified; exactly one canonical bridge remains. | `docs/architecture/` |
 
 ## OPEN_GATES
 
