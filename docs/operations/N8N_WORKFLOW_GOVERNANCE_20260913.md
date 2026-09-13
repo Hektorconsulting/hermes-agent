@@ -121,3 +121,30 @@ keine Außenwirkung.
 Runs. Der nächste Auftrag aus dem vorigen Abschnitt ist damit geschlossen.
 Eine erneute DLQ-Fehler-Injektion ist nicht erforderlich, solange weder der
 kanonische Flow noch n8n-Runtime/Queue-Konfiguration relevant verändert wird.
+
+## LEGACY_REVIEW — Nicht-destruktive Änderungspläne
+
+**Frischer Zugriffsbefund:** Die folgenden 11 aktiven Legacy-Flows sind nicht
+für MCP-Detailzugriff freigegeben. Diese fehlende Freigabe wird nicht allein
+für die Analyse geändert. Die nachstehenden Pläne stützen sich daher auf die
+gesicherte Governance-Inventur und verlangen vor einer Mutation immer einen
+frischen n8n-Export, Trigger-/Consumer-Nachweis und einen getesteten Rollback.
+Björn ist der organisatorische Owner aller Einträge.
+
+| ID | Flow | Zielklassifikation | Änderungsplan vor einer Mutation | Rollback |
+| --- | --- | --- | --- | --- |
+| `dTmssAZza32XXmL9` | TELEGRAM_VOICE_TO_OPENCLAW | LEGACY_REVIEW | Nur behalten, wenn eine interne Voice-Abnahme einen tatsächlichen Consumer beweist; sonst Disable-Plan, kein Pairing oder Versand. | Workflow-Export reimportieren, Aktivstatus zurücksetzen. |
+| `rjtQfIMvETlDp6dM` | TELEGRAM_TEXT_TO_OPENCLAW | LEGACY_REVIEW | Consumer und Webhook-Quelle gegen die kanonische OpenClaw-Bridge abgleichen; erst bei bestätigter Redundanz Disable-Plan. | Export reimportieren, Webhook aktivieren. |
+| `XiQ6UtOTr7mjti2i` | TELEGRAM_FILE_TO_OPENCLAW_INGESTION | LEGACY_REVIEW | Datenklassifikation und Speicherpfad prüfen; ohne Owner-Device-/Inbound-Abnahme keine Aktivierung oder Ausführung. | Export reimportieren, ursprünglichen Trigger wiederherstellen. |
+| `Xsp4uSwFDn3VVA8B` | HERMES_REVIEW_REQUEST | DISABLED_RETAIN | Auf aktuelle Consumer prüfen; falls keiner, als deaktivierte historische Review-Kante behalten. | Export reimportieren und Status zurücksetzen. |
+| `Fm0hdTSVGNqzFKIB` | PAPERCLIP_APPROVAL_GATE | DISABLED_RETAIN | Paperclip-Consumer und Approval-Policy prüfen; kein Approval-Workflow auslösen. | Export reimportieren und Status zurücksetzen. |
+| `MFogOoBYoERSVjxC` | OPENCLAW_TASK_INTAKE | DISABLED_RETAIN | Gegen die aktuelle read-only OpenClaw-Bridge und Gateway-Routen prüfen; bei nachgewiesener Redundanz kontrolliert deaktivieren. | Export reimportieren und Trigger reaktivieren. |
+| `gJsPO2Fj7D3R7bGo` | OPENCLAW_TASK_STATUS | DISABLED_RETAIN | Gegen Ledger/shared_kb-Statuspfad prüfen; bei nachgewiesener Redundanz kontrolliert deaktivieren. | Export reimportieren und Trigger reaktivieren. |
+| `itFkmawSvgW0Iri7` | AGENT_CREATE_WORKFLOW_SANDBOX | DISABLED_RETAIN | Nur behalten, wenn eine isolierte Sandbox-Abnahme einen Consumer nachweist; keine Workflow-Erstellung ausführen. | Export reimportieren und Status zurücksetzen. |
+| `4a783b34-5f02-4c85-9afe-85aac12a1f10` | Hermes Lovable Project Intake - Draft | DISABLED_RETAIN | Prüfen, ob ein aktueller Intake-Verbraucher existiert; ohne diesen kontrolliert deaktivieren, nicht löschen. | Export reimportieren und Status zurücksetzen. |
+| `2f4499ef-f0e4-4125-8b4a-401d18f6a826` | Hermes GitHub Repo Intake - Draft | DISABLED_RETAIN | Prüfen, ob ein aktueller Intake-Verbraucher existiert; ohne diesen kontrolliert deaktivieren, nicht löschen. | Export reimportieren und Status zurücksetzen. |
+| `yxZBu8zSEKCa40US` | 01 Strykly Event Intake | LEGACY_REVIEW | Vor jeder Entscheidung HMAC-Vertrag, Producer und Datenwirkung gegen einen aktuellen Owner-/Produktkontext nachweisen; keine Probe mit externem Event. | Export reimportieren, vorherigen Triggerstatus wiederherstellen. |
+
+Diese Tabelle ist ein Governance-Plan, keine Deaktivierungsfreigabe. Vor jeder
+einzelnen Mutation gilt: `Backup -> Consumer-Nachweis -> Änderungsplan ->
+kontrollierte Änderung -> interner Canary -> Rollback-Nachweis -> Registry`.
