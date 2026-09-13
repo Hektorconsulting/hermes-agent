@@ -1,0 +1,5 @@
+name: shared_kb
+version: 0.1.0
+description: "Canonical Hermes/OpenClaw knowledge bridge backed by the VPS knowledge database."
+hooks:
+  - on_session_end
