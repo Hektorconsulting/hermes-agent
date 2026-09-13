@@ -26,11 +26,13 @@ Hermes Desktop remains the leading control plane.
 
 ## Deliberate boundary
 
-The legacy runtime contains 21 local overlay candidates and remains dirty.
-They are backed up but not force-committed, reset, or deleted because a
-redacted scanner identified possible literal-secret patterns in three source
-files. This is a protection against accidentally publishing credentials, not
-an ownership or pull blocker.
+The 21 legacy overlay candidates are backed up and preserved in the dedicated
+remote branch `recovery/vps-runtime-prepull-20260913` at
+`7afd0b95244e41f6126c9a6078011efa0049db6e`. A redacted static scan found no
+API-key, private-key, or password literal; the only literal token default is
+an empty string and all other token values are runtime-derived. The running
+legacy checkout is therefore clean again. This recovery branch is not an
+upgrade branch and must not be merged into `main` without targeted review.
 
 ## Upgrade rule
 
