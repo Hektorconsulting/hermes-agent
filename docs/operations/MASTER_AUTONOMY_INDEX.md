@@ -17,7 +17,7 @@ knowledge store. Current claims must be re-read from runtime before use.
 | Hermes VPS | CURRENT | `hermes-gateway.service` and watchdog active; gateway loopback-only. | `/home/ai-admin/.hermes/` |
 | Shared knowledge | CURRENT | VPS source-of-truth has 23,089 sources; local mirror is a fallback rather than an authority. | `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db` |
 | Execution ledger | CURRENT | Deterministic checksum recall is bound to the VPS ledger. | `/home/ai-admin/.hermes/state/execution-ledger.sqlite3` |
-| OpenClaw | CURRENT | `ai-admin` gateway edge; do not treat it as a control plane. | `/home/ai-admin/.hermes/hermes-agent/tools/openclaw_employee_bridge.py` |
+| OpenClaw | CURRENT / HARDENED | Exactly one canonical systemd path (`User=ai-admin`) owns the gateway; listener is loopback-only and restart recovery was tested. | `/etc/systemd/system/openclaw-gateway.service` |
 | n8n | CURRENT runtime / CURRENT auth | Container stack is healthy and loopback-bound; OAuth-backed MCP discovery returned 36 workflows. | `https://n8n.chrissisfashionstore.de/mcp-server/http` |
 | Google Drive | CURRENT auth / CURRENT read | OAuth-backed profile, listing, recent-document read, and focused project discovery succeeded. | `MASTER AUTONOMY INDEX — CURRENT 2026-09-13` |
 | ADAM | CURRENT project source | Canonical workspace; preserve its worktree boundary. | `C:\Users\Björn\Documents\Codex\repos\ADAM` |
@@ -67,6 +67,7 @@ navigation, not a claim that every discovered source is current.
 | Execution-ledger recall | PASS | VPS ledger path and checksum recall verified. |
 | OpenClaw A2A | PASS historical + current process evidence | Preserve loopback/auth boundary; no external delivery test. |
 | n8n MCP | PASS | OAuth session and live read-only workflow discovery verified; 36 workflows are visible. |
+| n8n workflow registry | PASS | All 36 live MCP-visible workflows are classified without mutation; legacy candidates require a separate change set. | `docs/operations/N8N_WORKFLOW_REGISTRY_20260913.md` |
 | Google Drive | PASS | OAuth session plus live profile/list/read/search verification completed; curated technical sources are indexed in the native Google Drive master index. |
 | ChatGPT Projects API | NOT_AVAILABLE | Use this index and shared_kb as the transition layer. |
 
@@ -79,6 +80,23 @@ direct API connector is available in this runtime. The Google Drive master
 index and shared_kb remain the governed transition layer. A new interactive
 gate arises only if a future operation requires OAuth re-consent, CAPTCHA/2FA,
 device/QR pairing, payment, customer communication, or an external message.
+
+## PRODUCTION_HARDENING_20260913
+
+- **OpenClaw ownership and exposure:** PASS. The systemd unit running as
+  `ai-admin` is the sole canonical gateway path. The obsolete failed user-unit
+  was disabled and reset; it no longer competes for the state directory.
+  OpenClaw now listens only on `127.0.0.1` and `::1`. A controlled `SIGKILL`
+  recovery test created a new main PID, restored the listener, and passed the
+  authenticated Hermes employee-bridge health read.
+- **n8n:** PASS for OAuth-backed discovery and registry. The registry has five
+  `ACTIVE_RETAIN`, sixteen `LEGACY_REVIEW`, four `DISABLED_RETAIN`, and eleven
+  `ARCHIVE_CANDIDATE` workflows. No workflow was changed.
+- **Communications and voice:** PARTIAL by design. GOWA and Speaches internal
+  health checks pass. Telegram inbound/outbound, WhatsApp QR pairing, and
+  physical microphone-to-speaker E2E remain explicit human-interaction tests.
+- **Providers:** PARTIAL. Primary OpenRouter canary and local Ollama fallback
+  canary pass; an automatic failover-chain injection has not been performed.
 
 No secrets, credential values, customer communications, payments, or device
 pairing artifacts are stored in this index.
