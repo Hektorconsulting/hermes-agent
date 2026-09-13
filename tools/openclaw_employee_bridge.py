@@ -14,7 +14,10 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+try:
+    from mcp.server.fastmcp import FastMCP
+except ModuleNotFoundError:
+    from mcp.server import MCPServer as FastMCP
 
 
 OPENCLAW_CONFIG = Path("/home/ai-admin/.openclaw/openclaw.json")
