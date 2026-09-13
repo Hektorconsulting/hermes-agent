@@ -97,8 +97,7 @@ def main() -> int:
     openclaw = _check_service(
         "openclaw",
         "openclaw-gateway.service",
-        lambda: _unit_active("openclaw-gateway.service", user_unit=True) and _listener_reachable("127.0.0.1", 18789),
-        user_unit=True,
+        lambda: _unit_active("openclaw-gateway.service") and _listener_reachable("127.0.0.1", 18789),
     )
     record = {
         "at": datetime.now(UTC).isoformat(),

@@ -16,11 +16,17 @@ Communication and physical-voice acceptance retain explicit human gates.
 | Internal access | Authenticated `openclaw_employee_bridge.py` health read passes at `ws://127.0.0.1:18789`. |
 | Restart | Systemd restart passes. |
 | Crash recovery | Main process was deliberately killed. Systemd started a new main PID; listener and bridge health returned PASS. |
+| Watchdog | `autonomous-runtime-watchdog.timer` now checks the canonical system service and loopback listener; its immediate run returned `healthy`. |
 | Backup | `/home/ai-admin/.hermes/backups/production-hardening-20260913/openclaw-prechange/` |
 
 The system service is a single canonical service even though systemd owns it;
 the process itself runs as `ai-admin`. This is intentional and avoids a second
 user-service gateway competing for the same OpenClaw state directory.
+
+The historical user timers `openclaw-self-heal`, `openclaw-upstream-watch`,
+and `openclaw-telegram-session-guard` were disabled after backup because they
+would restart or order against the retired user service. Systemd recovery plus
+the corrected canonical watchdog replace their gateway-recovery role.
 
 ## Network decision
 

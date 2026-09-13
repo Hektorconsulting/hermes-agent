@@ -34,18 +34,19 @@ duplicates, and recovery paths are events, not lost work.
 The service ownership model is deliberate:
 
 - `hermes-gateway.service` is a system service.
-- `openclaw-gateway.service` is an `ai-admin` user service.  The historical
-  system unit is not its active owner.
+- `openclaw-gateway.service` is a systemd system service that executes as
+  `ai-admin`. The obsolete competing `ai-admin` user unit is disabled; the
+  system service is the sole active owner.
 - `autonomous-runtime-watchdog.timer` invokes
   `tools/runtime_watchdog.py` every five minutes.  It checks the real owner
   unit and the loopback OpenClaw listener, restarts only the unhealthy owner,
   rechecks within a bounded time budget, and appends redacted evidence to
   `/home/ai-admin/.hermes/state/runtime-watchdog.jsonl`.
 
-The unit files live in `deploy/systemd/`; deploy them with `systemctl
-daemon-reload` and enable the timer.  The watchdog does not expose a new port,
-does not store credentials, and leaves systemd journal evidence for every
-repair.
+The active watchdog checks the system-owned OpenClaw unit and the loopback
+listener. The historical user timers that restarted the retired user unit are
+disabled. The watchdog does not expose a new port, does not store credentials,
+and leaves systemd journal evidence for every repair.
 
 ## Capability adoption
 
