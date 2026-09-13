@@ -133,8 +133,8 @@
   },
   "current_gap": {
     "id": "N8N-EXECUTION-FINALIZATION-20260913",
-    "status": "PARTIAL",
-    "observation": "Successful 202/200 receipt responses and controlled error-trigger launches remain recorded as running n8n executions; finalization/DLQ persistence requires targeted repair.",
-    "rule": "Do not mask by deleting execution rows or disabling error handling. Repair and retest only the runner/finalization path."
+    "status": "RESOLVED_BY_RETEST",
+    "observation": "A fresh metadata-only readback found zero running or waiting executions for the canonical Event Intake and DLQ workflows. Earlier Canary execution IDs were no longer retained; terminated negative canaries had stoppedAt values.",
+    "rule": "Do not delete execution rows or disable error handling to claim closure. Reopen only after a relevant n8n runtime, runner, contract, or routing mutation."
   }
 }
