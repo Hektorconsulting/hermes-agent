@@ -5,7 +5,10 @@ import argparse, json, sys
 from shared_knowledge.bridge import KnowledgeBridge
 
 def build_server():
-    from mcp.server import MCPServer
+    try:
+        from mcp.server import MCPServer
+    except ImportError:
+        from mcp.server.fastmcp import FastMCP as MCPServer
     server = MCPServer(
         "hermes-shared-knowledge",
         instructions=("Canonical redacted Hermes/OpenClaw knowledge bridge. "
