@@ -12,6 +12,7 @@ readback; absence in a new probe is not proof of absence in the system.
 | Hermes Core | Hermes Desktop / Hermes | VERIFIED_REUSED | Do not re-audit the verified owner-to-shared-kb chain without mutation. |
 | shared_kb | Hermes | PASS | Canonical VPS DB is primary for local preflight/write-back; local SQLite is a synchronized cache/fallback; results are namespace-scoped and redacted. |
 | n8n | Hermes | VERIFIED_REUSED | Reuse the authenticated MCP/workflow path and reviewed allowlist; n8n holds references, not raw secret authority. |
+| Contract Memory | Hermes / Codex | CURRENT | `N8N_CONTRACT_REGISTRY.json` is the machine-readable source for verified endpoint, schema, routing, HMAC-reference and idempotency rules. Reuse it until an affected mutation or concrete failure requires a targeted readback. |
 | Vault | Hermes | GOVERNED | Vault or the existing secret store is authoritative; never put values in logs, packs or write-backs. |
 | Cloudflare / DNS / NGINX | Hermes | PASS_WITH_RETIRED_LEGACY_ROUTE | Keep public edge routes intentional and administrative surfaces private. The obsolete unauthenticated Hermes dashboard proxy is retired; port 81 is not publicly allowed by UFW and Docker `DOCKER-USER` policy is reconciled by a timer. |
 | Backups / Docker / Watchtower | Hermes | PASS | Managed backup/timer, rollback paths and non-destructive restore rehearsal are complete. |

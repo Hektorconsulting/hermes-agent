@@ -1,6 +1,10 @@
 # n8n Workflow Registry — 2026-09-13
 
-**Scope:** live MCP metadata. No workflow was deleted, disabled, published, or executed while creating this registry. `UNVERIFIED` means the field was not proven by the returned metadata.
+**Superseded for governance:** This initial MCP-only inventory is retained as
+historical baseline. The current, VPS-admin-read governance registry with
+formal Björn ownership, canonical allowlist, Canary evidence and the actual
+execution-finalization gap is
+[`N8N_WORKFLOW_GOVERNANCE_20260913.md`](N8N_WORKFLOW_GOVERNANCE_20260913.md).
 
 | ID | Workflow | Active | Trigger count | MCP | Updated (UTC) | Owner | Purpose | Data / external effect | Classification |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -52,4 +56,3 @@
 ## Next controlled action
 
 For every LEGACY_REVIEW and ARCHIVE_CANDIDATE, record a named owner, current consumer, trigger route, rollback path, and whether external effects are possible. Only then propose a separate disable/archive change set.
-

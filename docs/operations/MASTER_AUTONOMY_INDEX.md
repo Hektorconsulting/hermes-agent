@@ -69,7 +69,9 @@ navigation, not a claim that every discovered source is current.
 | n8n MCP | PASS | OAuth session and live read-only workflow discovery verified; 36 workflows are visible. |
 | n8n workflow registry | PASS | All 36 live MCP-visible workflows are classified without mutation; legacy candidates require a separate change set. | `docs/operations/N8N_WORKFLOW_REGISTRY_20260913.md` |
 | Google Drive | PASS | OAuth session plus live profile/list/read/search verification completed; curated technical sources are indexed in the native Google Drive master index. |
+| n8n Contract Memory | CURRENT | Machine-readable endpoint, schema, HMAC-reference, UUID/idempotency and canonical-route registry. Contract facts are reused without re-discovery absent a relevant mutation. | `docs/operations/N8N_CONTRACT_REGISTRY.json` |
 | ChatGPT Projects API | NOT_AVAILABLE | Use this index and shared_kb as the transition layer. |
+| n8n governance / allowlist | PARTIAL | Björn owns all 36 flows; a verified 9-flow canonical ADAM route is documented. HMAC and idempotent receipt canaries pass, but n8n/DLQ execution finalization remains `running` and requires recovery repair. | `docs/operations/N8N_WORKFLOW_GOVERNANCE_20260913.md` |
 
 ## OPEN_GATES
 

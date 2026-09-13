@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0.0",
+  "authority": "Björn; Hermes Desktop is the sole dispatcher",
+  "classification": "CURRENT_VERIFIED_CONTRACTS",
+  "last_verified_at": "2026-09-13T11:52:11Z",
+  "reuse_policy": {
+    "rule": "VERIFIED + NO_RELEVANT_MUTATION = REUSE",
+    "targeted_recheck": [
+      "affected service restart or deployment",
+      "endpoint, secret-reference, schema, routing, or network-boundary change",
+      "new observed contract failure"
+    ],
+    "prohibited_recheck": [
+      "unrelated full-stack audits",
+      "probing an established secret value",
+      "external communication merely to prove a known contract"
+    ]
+  },
+  "secret_policy": {
+    "authority": "runtime secret store / environment only",
+    "registry_records": "secret variable names, never values",
+    "forbidden": ["logs", "shared_kb payloads", "Drive", "Git", "Ledger payloads"]
+  },
+  "identity_policy": {
+    "event_id": {
+      "format": "UUID v4",
+      "lifecycle": "generate once for each logical event; preserve across retries; never reuse for a new event",
+      "generator": "crypto.randomUUID()",
+      "storage": "ADAM adam_core.event_receipts.event_id after accepted receipt"
+    },
+    "idempotency_key": {
+      "format": "application-defined string, min 8 max 200 characters",
+      "lifecycle": "generate once for each logical event; preserve verbatim for every retry",
+      "storage": "ADAM adam_core.event_receipts.idempotency_key with uniqueness enforcement"
+    }
+  },
+  "contracts": {
+    "adam_live_event_intake_v1": {
+      "workflow_id": "st2p1ATO2GAGkkn4",
+      "endpoint": "http://127.0.0.1:5678/webhook/adam-live-events-v1",
+      "public_route": "https://n8n.chrissisfashionstore.de/webhook/adam-live-events-v1",
+      "method": "POST",
+      "authentication": {
+        "algorithm": "HMAC-SHA256",
+        "secret_reference": "ADAM_N8N_HMAC_SECRET",
+        "header": "x-adam-signature",
+        "header_format": "sha256=<lowercase-hex>",
+        "canonicalization": "recursive JSON serialization with lexicographically sorted object keys"
+      },
+      "required_body": {
+        "schema_version": 1,
+        "event_id": "UUID v4",
+        "event_type": "non-empty string up to 160 characters",
+        "occurred_at": "ISO-8601 within 5 minutes",
+        "idempotency_key": "string 8..200 characters"
+      },
+      "safety": {
+        "external_effect": "none",
+        "outbound_enabled": false,
+        "retry": "Persist live receipt: 3 attempts, 1 second delay",
+        "error_workflow": "ADAMLiveDLQv1"
+      },
+      "expected_outcomes": {
+        "new_record": 202,
+        "replay": 200,
+        "invalid_signature": 401,
+        "invalid_schema": 400
+      }
+    },
+    "adam_live_multimodal_intake_v1": {
+      "workflow_id": "N0Po6Es788zBmaTf",
+      "endpoint": "http://127.0.0.1:5678/webhook/adam-live-multimodal-v1",
+      "method": "POST",
+      "authentication": {
+        "algorithm": "HMAC-SHA256",
+        "secret_reference": "ADAM_N8N_HMAC_SECRET",
+        "headers": ["x-adam-timestamp", "x-adam-signature"],
+        "signed_value": "<unix-seconds>.<JSON.stringify(body)>"
+      },
+      "required_body": {
+        "schema_version": "1.0.0",
+        "environment": "live",
+        "job_id": "non-empty string",
+        "idempotency_key": "non-empty string",
+        "external_actions": 0
+      },
+      "safety": {
+        "external_effect": "none",
+        "processing_mode": "queue-only-until-isolated-ai-runtime",
+        "error_workflow": "ADAMLiveDLQv1"
+      }
+    },
+    "adam_internal_automation_receiver_v1": {
+      "endpoint": "http://app:3000/api/internal/automation",
+      "method": "POST",
+      "authentication": {
+        "secret_reference": "ADAM_N8N_HMAC_SECRET",
+        "header": "x-adam-internal-secret",
+        "comparison": "timing-safe hash comparison"
+      },
+      "receipt_schema": {
+        "kind": "receipt",
+        "eventId": "UUID v4",
+        "idempotencyKey": "string 8..200 characters",
+        "eventType": "string 1..160 characters",
+        "payloadHash": "64 lowercase hex characters",
+        "status": ["accepted", "review_required"],
+        "responseStatus": ["accepted", "review_required", "awaiting_isolated_ai_runtime"]
+      },
+      "dead_letter_schema": {
+        "kind": "dead_letter",
+        "eventId": "UUID v4 or null",
+        "errorClass": ["n8n_workflow_failure", "persistence_failure", "runtime_failure"],
+        "redactedContext": ["workflowId", "executionId", "lastNodeType"]
+      }
+    }
+  },
+  "canonical_route": {
+    "gateway_workflow_id": "q3XX9KWOkBwxbcIz",
+    "gateway_path": "/adam-live",
+    "allowed_wrapper_workflow_ids": [
+      "fkKu4tvxLGnAFQjR",
+      "Phavo7BpKQM8ebbX",
+      "n6YE19rg68N8V0pW",
+      "tMxA9reSDQ39wqfo"
+    ],
+    "allowed_live_workflow_ids": [
+      "st2p1ATO2GAGkkn4",
+      "N0Po6Es788zBmaTf",
+      "WuLqHjDuFT1Pe6zE",
+      "ADAMLiveDLQv1"
+    ]
+  },
+  "current_gap": {
+    "id": "N8N-EXECUTION-FINALIZATION-20260913",
+    "status": "PARTIAL",
+    "observation": "Successful 202/200 receipt responses and controlled error-trigger launches remain recorded as running n8n executions; finalization/DLQ persistence requires targeted repair.",
+    "rule": "Do not mask by deleting execution rows or disabling error handling. Repair and retest only the runner/finalization path."
+  }
+}
