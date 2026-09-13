@@ -18,7 +18,7 @@ knowledge store. Current claims must be re-read from runtime before use.
 | Shared knowledge | CURRENT | VPS source-of-truth has 23,089 sources; local mirror is a fallback rather than an authority. | `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db` |
 | Execution ledger | CURRENT | Deterministic checksum recall is bound to the VPS ledger. | `/home/ai-admin/.hermes/state/execution-ledger.sqlite3` |
 | OpenClaw | CURRENT / HARDENED | Exactly one canonical systemd path (`User=ai-admin`) owns the gateway; listener is loopback-only and restart recovery was tested. | `/etc/systemd/system/openclaw-gateway.service` |
-| Hermes VPS release | CURRENT / CUTOVER PASS | Gateway runs the versioned 2026-09-13 release. Internal shared_kb and OpenClaw bridges use release source with an explicit MCP-1 adapter boundary while the gateway uses the current release environment. | `/home/ai-admin/.hermes/releases/hermes-vps-cutover-20260913` |
+| Hermes VPS release | CURRENT / RUNTIME COMPATIBILITY PASS | Gateway, shared_kb bridge and OpenClaw bridge run from one versioned release environment: Python 3.13.15, MCP 2.0.0 and SQLite 3.53.1. | `/home/ai-admin/.hermes/releases/hermes-vps-runtime-compatibility-20260913` |
 | n8n | CURRENT runtime / CURRENT auth | Container stack is healthy and loopback-bound; OAuth-backed MCP discovery returned 36 workflows. | `https://n8n.chrissisfashionstore.de/mcp-server/http` |
 | Google Drive | CURRENT auth / CURRENT read | OAuth-backed profile, listing, recent-document read, and focused project discovery succeeded. | `MASTER AUTONOMY INDEX — CURRENT 2026-09-13` |
 | ADAM | CURRENT project source | Canonical workspace; preserve its worktree boundary. | `C:\Users\Björn\Documents\Codex\repos\ADAM` |
@@ -73,6 +73,7 @@ navigation, not a claim that every discovered source is current.
 | n8n Contract Memory | CURRENT | Machine-readable endpoint, schema, HMAC-reference, UUID/idempotency and canonical-route registry. Contract facts are reused without re-discovery absent a relevant mutation. | `docs/operations/N8N_CONTRACT_REGISTRY.json` |
 | ChatGPT Projects API | NOT_AVAILABLE | Use this index and shared_kb as the transition layer. |
 | n8n governance / allowlist | PASS (retested) | Björn owns all 36 flows; a verified 9-flow canonical ADAM route is documented. HMAC and idempotent receipt canaries pass. Fresh metadata-only readback found no running or waiting executions in the Event-Intake or DLQ flows; earlier execution IDs have been finalized/retained away. | `docs/operations/N8N_WORKFLOW_GOVERNANCE_20260913.md` |
+| Hermes runtime compatibility | PASS | MCP2 bridge handshake, shared_kb synthetic write/read-back, authenticated read-only OpenClaw health, and read-only integrity checks for the four Hermes SQLite databases passed. | `docs/operations/HERMES_RUNTIME_COMPATIBILITY_CLOSURE_20260913.md` |
 
 ## OPEN_GATES
 
