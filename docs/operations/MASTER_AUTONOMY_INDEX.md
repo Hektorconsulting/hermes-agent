@@ -18,7 +18,7 @@ knowledge store. Current claims must be re-read from runtime before use.
 | Shared knowledge | CURRENT | VPS source-of-truth has 23,089 sources; local mirror is a fallback rather than an authority. | `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db` |
 | Execution ledger | CURRENT | Deterministic checksum recall is bound to the VPS ledger. | `/home/ai-admin/.hermes/state/execution-ledger.sqlite3` |
 | OpenClaw | CURRENT / HARDENED | Exactly one canonical systemd path (`User=ai-admin`) owns the gateway; listener is loopback-only and restart recovery was tested. | `/etc/systemd/system/openclaw-gateway.service` |
-| Hermes VPS release | CURRENT / RUNTIME COMPATIBILITY PASS | Gateway, shared_kb bridge and OpenClaw bridge run from one versioned release environment: Python 3.13.15, MCP 2.0.0 and SQLite 3.53.1. | `/home/ai-admin/.hermes/releases/hermes-vps-runtime-compatibility-20260913` |
+| Hermes VPS release | CURRENT / RUNTIME COMPATIBILITY PASS | Gateway, shared_kb bridge and OpenClaw bridge run from one versioned release environment: Python 3.13.15, MCP 2.0.0 and SQLite 3.53.1; deterministic ledger recall is active. | `/home/ai-admin/.hermes/releases/hermes-vps-ledger-recall-20260913` |
 | n8n | CURRENT runtime / CURRENT auth | Container stack is healthy and loopback-bound; OAuth-backed MCP discovery returned 36 workflows. | `https://n8n.chrissisfashionstore.de/mcp-server/http` |
 | Google Drive | CURRENT auth / CURRENT read | OAuth-backed profile, listing, recent-document read, and focused project discovery succeeded. | `MASTER AUTONOMY INDEX — CURRENT 2026-09-13` |
 | ADAM | CURRENT project source | Canonical workspace; preserve its worktree boundary. | `C:\Users\Björn\Documents\Codex\repos\ADAM` |

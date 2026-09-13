@@ -4,7 +4,7 @@
 
 **PASS with one tracked, pre-existing test defect.** Hermes VPS runs the
 versioned release `4302074af66e1e061fb25b84bf4cd4abecc5ab53` from
-`/home/ai-admin/.hermes/releases/hermes-vps-runtime-compatibility-20260913`.
+`/home/ai-admin/.hermes/releases/hermes-vps-ledger-recall-20260913`.
 The gateway and both internal bridges now use Python 3.13.15, MCP 2.0.0, and
 SQLite 3.53.1. Hermes Desktop remains the sole leading dispatcher.
 
@@ -19,6 +19,7 @@ SQLite 3.53.1. Hermes Desktop remains the sole leading dispatcher.
 | OpenClaw boundary | PASS | The staging and active bridge both completed authenticated, read-only gateway health; no send, agent-execution, configuration, or restart tool is exposed. |
 | SQLite runtime | PASS | Python 3.13.15 embeds SQLite 3.53.1. Read-only `PRAGMA integrity_check` returned `ok` for `state.db`, `cron/executions.db`, `kanban.db`, and the canonical execution ledger. |
 | Regression tests | PARTIAL | 165 targeted tests passed. Two `EventBridge` baseline-poll tests fail identically under the preceding Python 3.11.15 / SQLite 3.50.4 runtime; they are a pre-existing test defect, not a compatibility regression. |
+| Deterministic ledger recall | PASS | The shared_kb ledger adapters were promoted in a follow-on, tested release. The persisted handover checksum `c58f52fdc8635b490da4255328f1ac43e17042147922e043301de0f332f9452d` and its succeeded run are returned by a fresh runtime recall. |
 
 ## Change and rollback
 
@@ -32,6 +33,7 @@ SQLite 3.53.1. Hermes Desktop remains the sole leading dispatcher.
    repeatable diagnosis; it is not an authority or a second control plane.
 4. `platform-reuse-catalog` deliberately retains its separate legacy adapter;
    it was not in scope for this MCP2 bridge closure and was not changed.
+5. The active recall-capable release is `a55b13938f1f9e5ce0941c546e462245209e9a96`.
 
 ## Residual risk and next action
 
