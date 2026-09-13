@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import base64
+import posixpath
 import shutil
 import subprocess
 from typing import Any, Dict, List
@@ -38,8 +39,13 @@ class _RemoteKnowledgeBridge:
         encoded = base64.b64encode(
             json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
         ).decode("ascii")
+        # The bridge imports the repository-local ``tools`` package.  SSH
+        # sessions start in an arbitrary home directory, so make the active
+        # Hermes repository explicit instead of relying on caller CWD.
+        remote_cwd = posixpath.dirname(posixpath.dirname(self.remote_script))
         remote_payload = (
             "set -euo pipefail\n"
+            f"cd '{remote_cwd}'\n"
             f"printf '%s' '{encoded}' | base64 -d | "
             f"HERMES_KNOWLEDGE_DB='{self.remote_db}' "
             f"python3 '{self.remote_script}' {action} --stdin\n"
