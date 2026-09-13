@@ -15,10 +15,11 @@ knowledge store. Current claims must be re-read from runtime before use.
 | --- | --- | --- | --- |
 | Hermes Desktop | CURRENT | Leading control plane; Desktop shared-kb preflight reaches VPS knowledge. | `C:\Hermes\config.yaml` |
 | Hermes VPS | CURRENT | `hermes-gateway.service` and watchdog active; gateway loopback-only. | `/home/ai-admin/.hermes/` |
-| Shared knowledge | CURRENT | VPS source-of-truth has 23,087 sources; local mirror has the same source count. | `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db` |
+| Shared knowledge | CURRENT | VPS source-of-truth has 23,088 sources; local mirror has the same source count. | `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db` |
 | Execution ledger | CURRENT | Deterministic checksum recall is bound to the VPS ledger. | `/home/ai-admin/.hermes/state/execution-ledger.sqlite3` |
 | OpenClaw | CURRENT | `ai-admin` gateway edge; do not treat it as a control plane. | `/home/ai-admin/.hermes/hermes-agent/tools/openclaw_employee_bridge.py` |
-| n8n | CURRENT runtime / OWNER_GATE auth | Container stack is healthy and loopback-bound; MCP OAuth needs live confirmation. | `https://n8n.chrissisfashionstore.de/mcp-server/http` |
+| n8n | CURRENT runtime / CURRENT auth | Container stack is healthy and loopback-bound; OAuth-backed MCP discovery returned 36 workflows. | `https://n8n.chrissisfashionstore.de/mcp-server/http` |
+| Google Drive | CURRENT auth / CURRENT read | OAuth-backed profile, listing, recent-document read, and focused project discovery succeeded. | `MASTER AUTONOMY INDEX — CURRENT 2026-09-13` |
 | ADAM | CURRENT project source | Canonical workspace; preserve its worktree boundary. | `C:\Users\Björn\Documents\Codex\repos\ADAM` |
 
 ## ARCHITECTURE_DECISIONS
@@ -65,19 +66,19 @@ navigation, not a claim that every discovered source is current.
 | Shared-KB remote bridge | PASS | Windows wrapper → VPS bridge → canonical DB; redacted preflight and write-back tested. |
 | Execution-ledger recall | PASS | VPS ledger path and checksum recall verified. |
 | OpenClaw A2A | PASS historical + current process evidence | Preserve loopback/auth boundary; no external delivery test. |
-| n8n MCP | OWNER_GATE | OAuth confirmation and read-only discovery required. |
-| Google Drive | OWNER_GATE | No active Drive connector/source inventory is available. |
+| n8n MCP | PASS | OAuth session and live read-only workflow discovery verified; 36 workflows are visible. |
+| Google Drive | PASS | OAuth session plus live profile/list/read/search verification completed; curated technical sources are indexed in the native Google Drive master index. |
 | ChatGPT Projects API | NOT_AVAILABLE | Use this index and shared_kb as the transition layer. |
 
 ## OPEN_GATES
 
-1. **n8n OAuth:** the owner must complete any visible OAuth reconnect/consent
-   screen. Afterwards run a read-only workflow discovery and persist the
-   timestamp, scope metadata, and redacted event reference.
-2. **Google Drive:** the owner must authorize the Drive connector. Afterwards
-   inventory the available documents and add title, project, summary, date,
-   status, source, relevance, and canonical link to this index or its linked
-   structured registry.
+No owner authentication gate is currently open for n8n or Google Drive.
+
+The remaining technical capability boundary is **ChatGPT Projects API**: no
+direct API connector is available in this runtime. The Google Drive master
+index and shared_kb remain the governed transition layer. A new interactive
+gate arises only if a future operation requires OAuth re-consent, CAPTCHA/2FA,
+device/QR pairing, payment, customer communication, or an external message.
 
 No secrets, credential values, customer communications, payments, or device
 pairing artifacts are stored in this index.
