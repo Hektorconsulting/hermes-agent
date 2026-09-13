@@ -15,7 +15,7 @@ knowledge store. Current claims must be re-read from runtime before use.
 | --- | --- | --- | --- |
 | Hermes Desktop | CURRENT | Leading control plane; Desktop shared-kb preflight reaches VPS knowledge. | `C:\Hermes\config.yaml` |
 | Hermes VPS | CURRENT | `hermes-gateway.service` and watchdog active; gateway loopback-only. | `/home/ai-admin/.hermes/` |
-| Shared knowledge | CURRENT | VPS source-of-truth has 23,088 sources; local mirror has the same source count. | `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db` |
+| Shared knowledge | CURRENT | VPS source-of-truth has 23,089 sources; local mirror is a fallback rather than an authority. | `/home/ai-admin/knowledge/claude_codex_hermes_knowledge.db` |
 | Execution ledger | CURRENT | Deterministic checksum recall is bound to the VPS ledger. | `/home/ai-admin/.hermes/state/execution-ledger.sqlite3` |
 | OpenClaw | CURRENT | `ai-admin` gateway edge; do not treat it as a control plane. | `/home/ai-admin/.hermes/hermes-agent/tools/openclaw_employee_bridge.py` |
 | n8n | CURRENT runtime / CURRENT auth | Container stack is healthy and loopback-bound; OAuth-backed MCP discovery returned 36 workflows. | `https://n8n.chrissisfashionstore.de/mcp-server/http` |
