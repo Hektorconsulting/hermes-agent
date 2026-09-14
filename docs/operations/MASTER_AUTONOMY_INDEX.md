@@ -75,6 +75,7 @@ navigation, not a claim that every discovered source is current.
 | n8n governance / allowlist | PASS (retested) | Björn owns all 36 flows; a verified 9-flow canonical ADAM route is documented. HMAC and idempotent receipt canaries pass. Fresh metadata-only readback found no running or waiting executions in the Event-Intake or DLQ flows; earlier execution IDs have been finalized/retained away. | `docs/operations/N8N_WORKFLOW_GOVERNANCE_20260913.md` |
 | Hermes runtime compatibility | PASS | MCP2 bridge handshake, shared_kb synthetic write/read-back, authenticated read-only OpenClaw health, and read-only integrity checks for the four Hermes SQLite databases passed. | `docs/operations/HERMES_RUNTIME_COMPATIBILITY_CLOSURE_20260913.md` |
 | Architecture handover map | CURRENT / VERIFIED | Three versioned Mermaid maps, a machine-readable component/edge registry, glossary and evidence matrix now describe the actual Desktop/VPS runtime, data/recovery and integration boundaries. A manually started root SSH OpenClaw bridge found during mapping was stopped only after the canonical `ai-admin` release bridge was verified; exactly one canonical bridge remains. | `docs/architecture/` |
+| Autonomy operating contract | CURRENT / VERIFIED | Reuse rule, authority boundaries, recovery/rollback evidence, provider-failover test boundary and the remaining human gates are consolidated. Fresh runtime checks found both gateway services active, all three n8n containers healthy and the n8n custom backup catalog readable. | `docs/operations/HERMES_AUTONOMY_OPERATING_CONTRACT.md` |
 
 ## OPEN_GATES
 
@@ -102,6 +103,18 @@ device/QR pairing, payment, customer communication, or an external message.
   physical microphone-to-speaker E2E remain explicit human-interaction tests.
 - **Providers:** PARTIAL. Primary OpenRouter canary and local Ollama fallback
   canary pass; an automatic failover-chain injection has not been performed.
+
+## AUTONOMY_OPERATING_CONTRACT_20260914
+
+`HERMES_AUTONOMY_OPERATING_CONTRACT.md` is the governing execution agreement
+for future autonomous technical work. Its key rule is
+`VERIFIED + NO RELEVANT MUTATION = REUSE`; therefore it replaces repetitive
+full rechecks with contract-targeted verification after relevant mutations.
+It records a fresh non-interactive recovery check: the retained n8n custom dump
+was catalog-read successfully without a restore, and the project-bound provider
+failover suite passed 47 tests. A forced failure in the live gateway remains
+intentionally unperformed; repeat it only in a disposable session after a
+provider-chain change.
 
 No secrets, credential values, customer communications, payments, or device
 pairing artifacts are stored in this index.
