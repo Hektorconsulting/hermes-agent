@@ -23,6 +23,23 @@ SCHEMA_VERSION = "vps-source-set-contract-v1"
 DEFAULT_EXPECTED_COUNT = 599
 REFERENCE_FIELDS = ("source_ref", "path", "uri", "url")
 PROVENANCE_FIELDS = ("provenance", "source", "authority")
+SAFE_ITEM_FIELDS = {
+    "source_id",
+    "source_ref",
+    "path",
+    "uri",
+    "url",
+    "name",
+    "project_id",
+    "classification",
+    "mime_type",
+    "reason",
+    "authority",
+    "source",
+    "provenance",
+    "sha256",
+    "version",
+}
 
 
 def utc_now() -> str:
@@ -96,7 +113,10 @@ def validate(
         if not isinstance(raw, dict):
             errors.append(f"item_{index}:not_object")
             continue
-        item = dict(raw)
+        # Keep the emitted manifest bounded to provenance/index metadata.  Do
+        # not copy arbitrary selector fields (which could contain credentials,
+        # cookies, or unrelated source-body material).
+        item = {key: raw[key] for key in SAFE_ITEM_FIELDS if key in raw}
         source_id = _text(item.get("source_id"))
         if not source_id:
             errors.append(f"item_{index}:missing_source_id")

@@ -34,7 +34,9 @@ def _write_selector(path, items):
 
 def test_exact_599_selector_is_deterministic_and_metadata_only(tmp_path):
     selector = tmp_path / "selector.json"
-    _write_selector(selector, _items())
+    items = _items()
+    items[0]["untrusted_secret_like_field"] = "must-not-be-copied"
+    _write_selector(selector, items)
     first = MODULE.validate(selector)
     second = MODULE.validate(selector)
     assert first["status"] == "PASS"
@@ -42,6 +44,7 @@ def test_exact_599_selector_is_deterministic_and_metadata_only(tmp_path):
     assert first["metadata_only_count"] == 599
     assert first["source_ids_sha256"] == second["source_ids_sha256"]
     assert all(item["content_available_on_vps"] is False for item in first["items"])
+    assert "untrusted_secret_like_field" not in first["items"][0]
 
 
 def test_wrong_count_and_duplicate_id_fail_closed(tmp_path):
