@@ -1,5 +1,6 @@
 import importlib.util
 import pathlib
+import sqlite3
 
 
 MODULE_PATH = pathlib.Path(__file__).parents[2] / "tools" / "vps_runtime_integrity.py"
@@ -37,3 +38,14 @@ def test_audit_chain_round_trip(tmp_path):
     chain = MODULE.verify_audit_chain(str(path))
     assert chain["status"] == "PASS"
     assert chain["events"] == 2
+
+
+def test_restore_simulation_round_trip(tmp_path):
+    source = tmp_path / "source.sqlite3"
+    with sqlite3.connect(source) as conn:
+        conn.execute("CREATE TABLE knowledge_events (id INTEGER)")
+        conn.execute("INSERT INTO knowledge_events VALUES (1)")
+    result = MODULE.simulate_restore(str(source))
+    assert result["status"] == "PASS"
+    assert result["integrity"] == "ok"
+    assert result["counts"]["knowledge_events"] == 1

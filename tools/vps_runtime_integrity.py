@@ -18,6 +18,7 @@ import shlex
 import sqlite3
 import subprocess
 import sys
+import tempfile
 from typing import Any
 
 
@@ -124,6 +125,38 @@ def sqlite_check(path: str) -> dict[str, Any]:
         }
     except Exception as exc:
         return {"status": "FAIL", "path": path, "reason": type(exc).__name__}
+
+
+def simulate_restore(path: str) -> dict[str, Any]:
+    """Restore a SQLite backup into a temporary file and verify the copy."""
+    p = pathlib.Path(path)
+    if not p.is_file():
+        return {"status": "FAIL", "source": path, "reason": "missing"}
+    temp_path = ""
+    try:
+        source_uri = "file:" + str(p).replace("\\", "/") + "?mode=ro"
+        with sqlite3.connect(source_uri, uri=True, timeout=20) as source:
+            handle = tempfile.NamedTemporaryFile(prefix="vps-restore-", suffix=".sqlite3", delete=False)
+            temp_path = handle.name
+            handle.close()
+            with sqlite3.connect(temp_path, timeout=20) as restored:
+                source.backup(restored)
+                integrity = restored.execute("PRAGMA integrity_check").fetchone()[0]
+                counts: dict[str, int | None] = {}
+                for table in COUNT_TABLES:
+                    try:
+                        counts[table] = int(restored.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+                    except sqlite3.Error:
+                        counts[table] = None
+        return {"status": "PASS" if integrity == "ok" else "FAIL", "source": path, "integrity": integrity, "counts": counts}
+    except Exception as exc:
+        return {"status": "FAIL", "source": path, "reason": type(exc).__name__}
+    finally:
+        if temp_path:
+            try:
+                pathlib.Path(temp_path).unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 def file_check(path: str) -> dict[str, Any]:
@@ -271,6 +304,8 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
 
     backups = [file_check(path) for path in args.backup]
     failures.extend(f"backup:{result['path']}" for result in backups if result["status"] != "PASS")
+    restore_simulations = [simulate_restore(path) for path in args.restore_simulate]
+    failures.extend(f"restore:{result['source']}" for result in restore_simulations if result["status"] != "PASS")
 
     expected_qdrant = {
         "ai_auto_library_metadata_v1": registry.get("semantic_index", {}).get("points_count"),
@@ -294,6 +329,7 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
         "sqlite_current": sqlite_current,
         "manifests": manifests,
         "restore_verification": backups,
+        "restore_simulations": restore_simulations,
         "failures": sorted(set(failures)),
         "compensation_plan": compensation_plan(failures, drift),
         "integrity_status": "PASS" if not failures else "FAIL",
@@ -315,6 +351,7 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--qdrant", default=DEFAULT_QDRANT)
     p.add_argument("--manifest", action="append", default=list(DEFAULT_MANIFESTS))
     p.add_argument("--backup", action="append", default=[])
+    p.add_argument("--restore-simulate", action="append", default=[])
     p.add_argument("--record", action="store_true")
     p.add_argument("--output", choices=("json", "summary"), default="json")
     return p
