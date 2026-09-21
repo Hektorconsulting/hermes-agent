@@ -3,10 +3,31 @@ import json
 import unittest
 from unittest.mock import patch
 
-from plugins.memory.shared_kb import _RemoteKnowledgeBridge
+from plugins.memory.shared_kb import SharedKnowledgeProvider, _RemoteKnowledgeBridge
 
 
 class RemoteKnowledgeBridgeTests(unittest.TestCase):
+    def test_remote_only_initialization_does_not_open_local_bridge(self):
+        config = {
+            "memory": {
+                "shared_kb": {
+                    "remote_only": True,
+                    "remote_host_alias": "hostinger-vps",
+                    "remote_db_path": "/home/ai-admin/knowledge/canonical.sqlite3",
+                    "remote_bridge_script": "/home/ai-admin/hermes-bridge.py",
+                    "remote_wrapper": r"C:\Hermes\ops\Invoke-HostingerCommand.ps1",
+                }
+            }
+        }
+        with patch("hermes_cli.config.load_config", return_value=config):
+            provider = SharedKnowledgeProvider()
+            provider.initialize("remote-only-test", platform="cli")
+
+        self.assertTrue(provider.remote_only)
+        self.assertIsNone(provider.bridge)
+        self.assertIsNotNone(provider.remote_bridge)
+        self.assertTrue(provider.remote_bridge.enabled)
+
     def test_call_uses_fixed_wrapper_and_base64_stdin_payload(self):
         bridge = _RemoteKnowledgeBridge({
             "remote_host_alias": "hostinger-vps",

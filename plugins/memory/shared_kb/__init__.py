@@ -16,8 +16,9 @@ from tools.task_envelope import TaskEnvelope
 class _RemoteKnowledgeBridge:
     """Call the canonical VPS bridge through the fixed Windows SSH wrapper.
 
-    The local SQLite bridge remains the cache/fallback.  The remote call uses
-    a base64-framed stdin payload so JSON never becomes a shell command.
+    The remote call uses a base64-framed stdin payload so JSON never becomes a
+    shell command. Local mirroring is optional and disabled for the VPS-only
+    profile.
     """
 
     def __init__(self, config: dict[str, Any]) -> None:
@@ -75,6 +76,7 @@ class SharedKnowledgeProvider(MemoryProvider):
         self.platform = ""
         self.context: Dict[str, Any] = {}
         self.remote_bridge: _RemoteKnowledgeBridge | None = None
+        self.remote_only = False
 
     @property
     def name(self) -> str:
@@ -87,7 +89,6 @@ class SharedKnowledgeProvider(MemoryProvider):
         self.session_id = session_id or ""
         self.platform = kwargs.get("platform", "cli")
         self.context = dict(kwargs)
-        path = self.config.get("db_path") or os.environ.get("HERMES_KNOWLEDGE_DB")
         provider_config: dict[str, Any] = {}
         try:
             from hermes_cli.config import load_config
@@ -95,12 +96,17 @@ class SharedKnowledgeProvider(MemoryProvider):
             provider_config = memory.get("shared_kb", {}) if isinstance(memory, dict) else {}
         except Exception:
             provider_config = {}
-        if not path and isinstance(provider_config, dict):
-            path = provider_config.get("db_path")
-        self.bridge = KnowledgeBridge(path)
         remote_config = provider_config if isinstance(provider_config, dict) else {}
         remote = _RemoteKnowledgeBridge(remote_config)
         self.remote_bridge = remote if remote.enabled else None
+        self.remote_only = bool(remote_config.get("remote_only"))
+        if self.remote_only:
+            self.bridge = None
+            return
+        path = self.config.get("db_path") or os.environ.get("HERMES_KNOWLEDGE_DB")
+        if not path and isinstance(provider_config, dict):
+            path = provider_config.get("db_path")
+        self.bridge = KnowledgeBridge(path)
 
     def system_prompt_block(self) -> str:
         return ("# Shared Knowledge\n"
@@ -109,7 +115,7 @@ class SharedKnowledgeProvider(MemoryProvider):
                 "persist the requirement and result through the shared write-back.")
 
     def prefetch(self, query: str, *, session_id: str = "") -> str:
-        if not self.bridge or not query or not query.strip():
+        if (not self.bridge and not self.remote_bridge) or not query or not query.strip():
             return ""
         envelope = TaskEnvelope.from_mapping({
             "task_id": session_id or self.session_id,
@@ -137,7 +143,9 @@ class SharedKnowledgeProvider(MemoryProvider):
             result = self.remote_bridge.call(
                 "preflight", request, task_id=envelope.task_id,
             )
-        result = result or self.bridge.preflight(request)
+        if not result and self.bridge:
+            result = self.bridge.preflight(request)
+        result = result or {}
         bundle = result.get("context_bundle", {})
         lines = ["## Shared Knowledge Preflight"]
         for item in bundle.get("requirements", [])[:5]:
@@ -149,7 +157,7 @@ class SharedKnowledgeProvider(MemoryProvider):
         return "\n".join(lines) if len(lines) > 1 else ""
 
     def sync_turn(self, user_content: str, assistant_content: str, *, session_id: str = "", messages: List[Dict[str, Any]] | None = None) -> None:
-        if not self.bridge or not user_content:
+        if (not self.bridge and not self.remote_bridge) or not user_content:
             return
         sid = session_id or self.session_id
         task = TaskEnvelope.from_mapping({
@@ -174,7 +182,7 @@ class SharedKnowledgeProvider(MemoryProvider):
 
     def on_session_end(self, messages: List[Dict[str, Any]]) -> None:
         """Persist the latest complete transcript at the session boundary."""
-        if not self.bridge or not messages:
+        if (not self.bridge and not self.remote_bridge) or not messages:
             return
         self._writeback({
             "task_id": self.session_id or "hermes-session",
@@ -195,7 +203,7 @@ class SharedKnowledgeProvider(MemoryProvider):
 
     def on_delegation(self, task: str, result: str, *, child_session_id: str = "", **kwargs) -> None:
         """Persist delegation lineage without requiring a model tool call."""
-        if not self.bridge or not task:
+        if (not self.bridge and not self.remote_bridge) or not task:
             return
         child_id = child_session_id or "delegation"
         self._writeback({
@@ -222,12 +230,14 @@ class SharedKnowledgeProvider(MemoryProvider):
         ]
 
     def handle_tool_call(self, tool_name: str, args: Dict[str, Any], **kwargs) -> str:
-        if not self.bridge:
+        if not self.bridge and not self.remote_bridge:
             return json.dumps({"status": "FAIL", "error": "provider_not_initialized"})
         if tool_name == "shared_knowledge_preflight":
             request = {"task_id": self.session_id, "session_id": self.session_id, "channel": self.platform, "agent_id": "hermes", "objective": args.get("objective", ""), "requested_scope": args.get("objective", ""), "privacy_scope": args.get("privacy_scope", "system")}
             result = self.remote_bridge.call("preflight", request, task_id=self.session_id) if self.remote_bridge else None
-            return json.dumps(result or self.bridge.preflight(request), ensure_ascii=False)
+            if not result and self.bridge:
+                result = self.bridge.preflight(request)
+            return json.dumps(result or {"status": "FAIL", "error": "remote_knowledge_unavailable"}, ensure_ascii=False)
         if tool_name == "shared_knowledge_writeback":
             payload = {"task_id": self.session_id, "session_id": self.session_id, "channel": self.platform, "agent_id": "hermes", "privacy_scope": "system", "objective": args.get("objective", ""), "requirement": {"objective": args.get("objective", ""), "status": args.get("status", "draft")}, "result": {"summary": args.get("summary", ""), "status": args.get("status", "draft")}}
             return json.dumps(self._writeback(payload), ensure_ascii=False)
