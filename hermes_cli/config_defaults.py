@@ -8,6 +8,12 @@ DEFAULT_CONFIG = {
     "model": "",
     "providers": {},
     "fallback_providers": [],
+    # Hard inference boundary for owner-controlled VPS deployments. When true,
+    # the provider router rejects non-loopback model endpoints and the
+    # auxiliary auto-chain does not use its built-in external discovery path.
+    # Keep false by default so existing non-VPS Hermes installations retain
+    # their historical provider behavior.
+    "vps_only": False,
     "credential_pool_strategies": {},
     "toolsets": ["hermes-cli"],
     # SQLite journal mode used by every Hermes database opener. WAL is the

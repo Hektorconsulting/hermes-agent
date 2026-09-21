@@ -4510,6 +4510,83 @@ def _get_provider_chain() -> List[tuple]:
     ]
 
 
+def _vps_only_inference_required() -> bool:
+    """Return whether this runtime must keep model inference VPS-only.
+
+    The deployment opt-in is intentionally explicit. The environment override
+    is useful for systemd/container deployments where the config file is
+    shared, while ``vps_only`` is the durable source of truth in config.yaml.
+    """
+    raw = os.getenv("HERMES_VPS_ONLY", "")
+    if raw.strip().lower() in {"1", "true", "yes", "on"}:
+        return True
+    try:
+        from hermes_cli.config import load_config_readonly
+
+        value = load_config_readonly().get("vps_only", False)
+        if isinstance(value, dict):
+            value = value.get("enabled", False)
+        if isinstance(value, str):
+            return value.strip().lower() in {"1", "true", "yes", "on"}
+        return bool(value)
+    except Exception as exc:
+        logger.debug("Could not read VPS-only inference policy: %s", exc)
+        return False
+
+
+def _vps_only_base_url_allowed(base_url: str) -> bool:
+    """Allow only the VPS Ollama relay exposed on the local runtime host."""
+    normalized = str(base_url or "").strip().rstrip("/")
+    if not normalized:
+        return False
+    try:
+        parsed = urlparse(normalized)
+        host = (parsed.hostname or "").lower().rstrip(".")
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        return (
+            parsed.scheme == "http"
+            and host in {"127.0.0.1", "localhost", "::1"}
+            and port == 11434
+        )
+    except (TypeError, ValueError):
+        return False
+
+
+def _vps_only_provider_allowed(provider: str, explicit_base_url: Optional[str] = None) -> bool:
+    """Check a concrete provider against the strict VPS-only model boundary."""
+    normalized = str(provider or "").strip().lower()
+    if normalized in {"", "auto"}:
+        # ``auto`` is handled by _resolve_auto_route, whose built-in discovery
+        # path is disabled separately below.
+        return True
+
+    base_url = str(explicit_base_url or "").strip()
+    if not base_url and normalized.startswith("custom:"):
+        try:
+            from hermes_cli.runtime_provider import _get_named_custom_provider
+
+            entry = _get_named_custom_provider(normalized)
+            if isinstance(entry, dict):
+                base_url = str(
+                    entry.get("base_url") or entry.get("api") or entry.get("url") or ""
+                )
+        except Exception as exc:
+            logger.debug("Could not inspect named custom provider %s: %s", normalized, exc)
+    if not base_url and normalized == "custom":
+        try:
+            from hermes_cli.config import load_config_readonly
+
+            model_cfg = load_config_readonly().get("model")
+            if isinstance(model_cfg, dict):
+                base_url = str(model_cfg.get("base_url") or "")
+        except Exception as exc:
+            logger.debug("Could not inspect bare custom provider endpoint: %s", exc)
+
+    return (
+        normalized.startswith("custom:") or normalized == "custom"
+    ) and _vps_only_base_url_allowed(base_url)
+
+
 # ── Auxiliary "recently 402'd" unhealthy-provider cache ────────────────────
 #
 # When an auxiliary provider returns HTTP 402 (Payment Required / credit
@@ -6634,6 +6711,12 @@ def _resolve_auto_route(
     if fb_client is not None:
         return fb_client, fb_model, fb_label
 
+    if _vps_only_inference_required():
+        logger.warning(
+            "VPS-only inference policy blocked Hermes built-in external provider discovery"
+        )
+        return None, None, ""
+
     # ── Step 3: aggregator / fallback chain ──────────────────────────────
     tried = []
     for label, try_fn in _get_provider_chain():
@@ -6844,6 +6927,15 @@ def resolve_provider_client(
     # which aliases to "kimi-coding") is still reachable via the named-custom
     # branch below.
     original_provider = (provider or "").strip().lower()
+    if _vps_only_inference_required() and not _vps_only_provider_allowed(
+        original_provider, explicit_base_url
+    ):
+        logger.warning(
+            "VPS-only inference policy blocked provider %s (endpoint=%s)",
+            original_provider or "(empty)",
+            (explicit_base_url or "(configured)")[:120],
+        )
+        return None, None
     # Normalise aliases
     provider = _normalize_aux_provider(provider)
 
