@@ -42,3 +42,16 @@ def test_vps_only_router_rejects_external_provider_before_auth(monkeypatch):
         )
     assert client is None
     assert model is None
+
+
+def test_non_strict_policy_does_not_block_explicit_external_provider(monkeypatch):
+    monkeypatch.setattr(auxiliary_client, "_vps_only_inference_required", lambda: False)
+    fake_client = object()
+    with patch.object(auxiliary_client, "_try_openrouter", return_value=(fake_client, "free-model")):
+        client, model = auxiliary_client.resolve_provider_client(
+            "openrouter",
+            model="free-model",
+            explicit_base_url="https://openrouter.ai/api/v1",
+        )
+    assert client is fake_client
+    assert model == "free-model"
